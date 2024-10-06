@@ -7,7 +7,14 @@
     <meta name="keywords" content="POTA, Parks on the Air, Amateur Radio, Ham Radio, OpenStreetMap">
     <title>POTA (Parks on the Air) Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="styles.css">
+    
+    <!-- MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <style>
+        #map { height: 100vh; width: 100%; }
+    </style>
 </head>
 <body>
     <header>
@@ -17,9 +24,13 @@
     <footer>
         <p>POTA Map by Volker Kerkhoff, EA7KLK, Montequinto, Spain. All data provided by Openstreetmap and its community. The accuracy and data of this map depends on volunteers maintaining the data. If you are a regular participant in the POTA program, consider contributing. Instructions on how to do that in OpenStreetMap will follow soon.</p>
     </footer>
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-providers/1.13.0/leaflet-providers.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    
+    <!-- MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Our custom script -->
     <script src="script.js"></script>
     <!-- Matomo -->
     <script>
