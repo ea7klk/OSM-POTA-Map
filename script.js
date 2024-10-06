@@ -43,10 +43,10 @@ function addFeaturesToMap(potaData) {
 
         if (element.type === 'node') {
             center = [element.lat, element.lon];
-            feature = L.circle(center, {radius: 100, color: 'blue', fillColor: 'blue', fillOpacity: 0.2});
+            feature = L.circle(center, {radius: 100, color: 'green', fillColor: 'green', fillOpacity: 0.2});
         } else if (element.type === 'way') {
             const coordinates = element.geometry.map(point => [point.lat, point.lon]);
-            feature = L.polyline(coordinates, {color: 'blue'});
+            feature = L.polyline(coordinates, {color: 'green'});
             center = feature.getBounds().getCenter();
         } else if (element.type === 'relation') {
             const coordinates = element.members
@@ -55,11 +55,9 @@ function addFeaturesToMap(potaData) {
             
             if (coordinates.length > 0) {
                 if (element.tags.type === 'route') {
-                    const coordinates = element.geometry.map(point => [point.lat, point.lon]);
-                    feature = L.polyline(coordinates, {color: 'blue'});
-                    center = feature.getBounds().getCenter();
+                    feature = L.polyline(coordinates, {color: 'green'});
                 } else {
-                    feature = L.polygon(coordinates, {color: 'red', fillColor: 'red', fillOpacity: 0.2});
+                    feature = L.polygon(coordinates, {color: 'green', fillColor: 'green', fillOpacity: 0.2});
                 }
                 center = feature.getBounds().getCenter();
             }
