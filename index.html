@@ -3,48 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="POTA (Parks on the Air) Map for Amateur Radio and Ham Radio enthusiasts">
-    <meta name="keywords" content="POTA, Parks on the Air, Amateur Radio, Ham Radio, OpenStreetMap">
-    <title>POTA (Parks on the Air) Map</title>
+    <title>POTA Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    
-    <!-- MarkerCluster CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    
-    <style>
-        #map { height: 100vh; width: 100%; }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <h1>POTA (Parks on the Air) Map by EA7KLK</h1>
+        <h1>POTA Map</h1>
     </header>
     <div id="map"></div>
     <footer>
-        <p>POTA Map by Volker Kerkhoff, EA7KLK, Montequinto, Spain. All data provided by Openstreetmap and its community. The accuracy and data of this map depends on volunteers maintaining the data. If you are a regular participant in the POTA program, consider contributing. Instructions on how to do that in OpenStreetMap will follow soon.</p>
+        <p>&copy; 2023 POTA Map. All rights reserved.</p>
     </footer>
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    
-    <!-- MarkerCluster JS -->
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-    
-    <!-- Our custom script -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
     <script src="script.js"></script>
-    <!-- Matomo -->
-    <script>
-      var _paq = window._paq = window._paq || [];
-      _paq.push(['trackPageView']);
-      _paq.push(['enableLinkTracking']);
-      (function() {
-        var u="MATOMO_URL";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', 'MATOMO_SITE_ID']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-      })();
-    </script>
-    <!-- End Matomo Code -->
 </body>
 </html>
