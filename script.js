@@ -26,6 +26,7 @@ async function fetchPOTAData() {
             body: `data=${encodeURIComponent(query)}`
         });
         const data = await response.json();
+        console.log('Fetched POTA data:', data);
         return data.elements;
     } catch (error) {
         console.error('Error fetching POTA data:', error);
@@ -35,61 +36,103 @@ async function fetchPOTAData() {
 
 // Function to add features to the map
 function addFeaturesToMap(potaData) {
+    console.log('Adding features to map. Total elements:', potaData.length);
     const nameSet = new Set();
 
-    potaData.forEach(element => {
-        let feature;
+    potaData.forEach((element, index) => {
+        console.log(`Processing element ${index + 1}/${potaData.length}:`, element);
+        let features = [];
         let center;
 
         if (element.type === 'node') {
-            center = [element.lat, element.lon];
-            feature = L.circle(center, {radius: 100, color: 'green', fillColor: 'green', fillOpacity: 0.2});
+            if (typeof element.lat === 'number' && typeof element.lon === 'number') {
+                center = [element.lat, element.lon];
+                features.push(L.circle(center, {radius: 100, color: 'green', fillColor: 'green', fillOpacity: 0.2}));
+                console.log('Added circle for node:', center);
+            } else {
+                console.log('Invalid node coordinates:', element);
+            }
         } else if (element.type === 'way') {
-            const coordinates = element.geometry.map(point => [point.lat, point.lon]);
-            feature = L.polyline(coordinates, {color: 'green'});
-            center = feature.getBounds().getCenter();
-        } else if (element.type === 'relation') {
-            const coordinates = element.members
-                .filter(member => member.type === 'way')
-                .flatMap(member => member.geometry ? member.geometry.map(point => [point.lat, point.lon]) : []);
-            
-            if (coordinates.length > 0) {
-                if (element.tags.type === 'route') {
-                    feature = L.polyline(coordinates, {color: 'green'});
+            if (element.geometry && element.geometry.length > 0) {
+                const coordinates = element.geometry.map(point => [point.lat, point.lon]).filter(coord => coord[0] && coord[1]);
+                if (coordinates.length > 0) {
+                    features.push(L.polyline(coordinates, {color: 'green'}));
+                    console.log('Added polyline for way:', coordinates);
                 } else {
-                    feature = L.polygon(coordinates, {color: 'green', fillColor: 'green', fillOpacity: 0.2});
+                    console.log('Way has no valid coordinates:', element);
                 }
-                center = feature.getBounds().getCenter();
+            } else {
+                console.log('Way has no valid geometry:', element);
+            }
+        } else if (element.type === 'relation') {
+            const wayMembers = element.members.filter(member => member.type === 'way');
+            console.log('Processing relation. Way members:', wayMembers.length);
+            
+            wayMembers.forEach((wayMember, memberIndex) => {
+                if (wayMember.geometry && wayMember.geometry.length > 0) {
+                    const coordinates = wayMember.geometry.map(point => [point.lat, point.lon]).filter(coord => coord[0] && coord[1]);
+                    if (coordinates.length > 0) {
+                        features.push(L.polyline(coordinates, {color: 'green'}));
+                        console.log(`Added polyline for way member ${memberIndex + 1}:`, coordinates);
+                    } else {
+                        console.log(`Way member ${memberIndex + 1} has no valid coordinates:`, wayMember);
+                    }
+                } else {
+                    console.log(`Way member ${memberIndex + 1} has no valid geometry:`, wayMember);
+                }
+            });
+
+            if (element.tags.type !== 'route' && features.length > 0) {
+                const allCoordinates = features.flatMap(feature => feature.getLatLngs()[0]);
+                if (allCoordinates.length > 0) {
+                    features.push(L.polygon(allCoordinates, {color: 'green', fillColor: 'green', fillOpacity: 0.2}));
+                    console.log('Added polygon for non-route relation:', allCoordinates);
+                } else {
+                    console.log('Non-route relation has no valid coordinates:', element);
+                }
             }
         }
 
-        if (feature) {
-            feature.addTo(map);
+        if (features.length > 0) {
+            const featureGroup = L.featureGroup(features);
+            featureGroup.addTo(map);
+            console.log('Added feature group to map:', featureGroup);
 
-            // Add hover tooltip to feature
-            const tooltipContent = `
-                <div style="text-align: center;">
-                    <strong>${element.tags.name || 'POTA Site'}</strong><br>
-                    Park ID: ${element.tags['communication:amateur_radio:pota']}<br>
-                    Element ID: ${element.id}
-                </div>
-            `;
-            feature.bindTooltip(tooltipContent, {
-                permanent: false,
-                direction: 'top'
-            });
+            const bounds = featureGroup.getBounds();
+            if (bounds.isValid()) {
+                center = bounds.getCenter();
 
-            // Add centered marker only if it's the first occurrence of the name
-            if (!nameSet.has(element.tags.name)) {
-                nameSet.add(element.tags.name);
-                const marker = L.marker(center).addTo(map);
-                marker.bindTooltip(tooltipContent, {
+                // Add hover tooltip to feature group
+                const tooltipContent = `
+                    <div style="text-align: center;">
+                        <strong>${element.tags.name || 'POTA Site'}</strong><br>
+                        Park ID: ${element.tags['communication:amateur_radio:pota']}<br>
+                        Element ID: ${element.id}
+                    </div>
+                `;
+                featureGroup.bindTooltip(tooltipContent, {
                     permanent: false,
                     direction: 'top'
                 });
+
+                // Add centered marker only if it's the first occurrence of the name
+                if (!nameSet.has(element.tags.name)) {
+                    nameSet.add(element.tags.name);
+                    const marker = L.marker(center).addTo(map);
+                    marker.bindTooltip(tooltipContent, {
+                        permanent: false,
+                        direction: 'top'
+                    });
+                    console.log('Added marker for unique name:', element.tags.name);
+                }
+            } else {
+                console.log('Invalid bounds for feature group:', element);
             }
+        } else {
+            console.log('No features created for element:', element);
         }
     });
+    console.log('Finished adding features to map');
 }
 
 // Function to save map state
@@ -118,6 +161,9 @@ map.on('zoomend', saveMapState);
 
 // Fetch and display POTA data
 fetchPOTAData().then(potaData => {
+    console.log('Fetched POTA data, adding features to map');
     addFeaturesToMap(potaData);
+    console.log('Features added, restoring map state');
     restoreMapState();  // Restore map state after adding features
+    console.log('Map initialization complete');
 });
