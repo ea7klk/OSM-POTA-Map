@@ -55,7 +55,9 @@ function addFeaturesToMap(potaData) {
             
             if (coordinates.length > 0) {
                 if (element.tags.type === 'route') {
-                    feature = L.polyline(coordinates, {color: 'red'});
+                    const coordinates = element.geometry.map(point => [point.lat, point.lon]);
+                    feature = L.polyline(coordinates, {color: 'blue'});
+                    center = feature.getBounds().getCenter();
                 } else {
                     feature = L.polygon(coordinates, {color: 'red', fillColor: 'red', fillOpacity: 0.2});
                 }
