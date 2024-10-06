@@ -54,7 +54,11 @@ function addFeaturesToMap(potaData) {
                 .flatMap(member => member.geometry ? member.geometry.map(point => [point.lat, point.lon]) : []);
             
             if (coordinates.length > 0) {
-                feature = L.polygon(coordinates, {color: 'red'});
+                if (element.tags.type === 'route') {
+                    feature = L.polyline(coordinates, {color: 'red'});
+                } else {
+                    feature = L.polygon(coordinates, {color: 'red', fillColor: 'red', fillOpacity: 0.2});
+                }
                 center = feature.getBounds().getCenter();
             }
         }
