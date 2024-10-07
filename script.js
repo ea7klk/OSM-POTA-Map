@@ -39,12 +39,14 @@ L.control.zoom({
     position: 'topright'
 }).addTo(map);
 
-// Add locate control
+// Add locate control with initial zoom level of 14
 L.control.locate({
     position: 'topright',
     strings: {
         title: "Locate me"
-    }
+    },
+    setView: 'always',
+    initialZoomLevel: 14
 }).addTo(map);
 
 // Save position and zoom level when changed
@@ -141,14 +143,24 @@ function addLocationsToMap(locations) {
             }
         } else if (location.type === 'relation') {
             if (location.members) {
+                let relationCoordinates = [];
                 location.members.forEach(member => {
                     if ((member.type === 'way' || member.type === 'route') && member.geometry) {
                         const coordinates = member.geometry.map(point => [point.lat, point.lon]);
                         L.polyline(coordinates, {color: 'green'}).addTo(map);
+                        relationCoordinates = relationCoordinates.concat(coordinates);
                     }
                 });
-            }
-            if (location.center) {
+                
+                // Add marker for the relation using the first coordinate of its members
+                if (relationCoordinates.length > 0 && !potaRefs.has(potaRef)) {
+                    potaRefs.add(potaRef);
+                    L.marker(relationCoordinates[0])
+                        .addTo(map)
+                        .bindPopup(popupContent);
+                }
+            } else if (location.center) {
+                // Fallback to using the center if no members are available
                 if (!potaRefs.has(potaRef)) {
                     potaRefs.add(potaRef);
                     L.marker([location.center.lat, location.center.lon])
