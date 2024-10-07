@@ -116,6 +116,14 @@ function createPopupContent(location) {
     return `<strong>${commonName}</strong><br>POTA ID: <strong>${potaRef}</strong>`;
 }
 
+// Custom icon for POTA markers
+const potaIcon = L.icon({
+    iconUrl: 'pota_marker.png',
+    iconSize: [41, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34]
+});
+
 // Function to add markers and lines to the map
 function addLocationsToMap(locations) {
     const potaRefs = new Set();
@@ -125,7 +133,7 @@ function addLocationsToMap(locations) {
         const popupContent = createPopupContent(location);
 
         if (location.type === 'node') {
-            L.marker([location.lat, location.lon])
+            L.marker([location.lat, location.lon], {icon: potaIcon})
                 .addTo(map)
                 .bindPopup(popupContent);
         } else if (location.type === 'way' || location.type === 'route') {
@@ -137,7 +145,7 @@ function addLocationsToMap(locations) {
             if (!potaRefs.has(potaRef)) {
                 potaRefs.add(potaRef);
                 const firstPoint = coordinates[0];
-                L.marker(firstPoint)
+                L.marker(firstPoint, {icon: potaIcon})
                     .addTo(map)
                     .bindPopup(popupContent);
             }
@@ -155,7 +163,7 @@ function addLocationsToMap(locations) {
                 // Add marker for the relation using the first coordinate of its members
                 if (relationCoordinates.length > 0 && !potaRefs.has(potaRef)) {
                     potaRefs.add(potaRef);
-                    L.marker(relationCoordinates[0])
+                    L.marker(relationCoordinates[0], {icon: potaIcon})
                         .addTo(map)
                         .bindPopup(popupContent);
                 }
@@ -163,7 +171,7 @@ function addLocationsToMap(locations) {
                 // Fallback to using the center if no members are available
                 if (!potaRefs.has(potaRef)) {
                     potaRefs.add(potaRef);
-                    L.marker([location.center.lat, location.center.lon])
+                    L.marker([location.center.lat, location.center.lon], {icon: potaIcon})
                         .addTo(map)
                         .bindPopup(popupContent);
                 }
