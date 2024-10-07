@@ -49,14 +49,23 @@ L.control.locate({
     initialZoomLevel: 14
 }).addTo(map);
 
-// Save position and zoom level, and fetch new locations when map moves or zooms
-function updateMapState() {
+// Variable to store the previous zoom level
+let previousZoom = initialZoom;
+
+// Save position and zoom level, and fetch new locations when map moves or zooms out
+function updateMapState(e) {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapLat', center.lat, 30);
     setCookie('mapLng', center.lng, 30);
     setCookie('mapZoom', zoom, 30);
-    fetchPOTALocations();
+
+    // Check if we're zooming out or if it's a move event
+    if (e.type === 'moveend' || (e.type === 'zoomend' && zoom < previousZoom)) {
+        fetchPOTALocations();
+    }
+
+    previousZoom = zoom;
 }
 
 map.on('moveend', updateMapState);
