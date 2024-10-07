@@ -5,6 +5,8 @@ FROM nginx:alpine
 COPY index.html /usr/share/nginx/html/
 COPY styles.css /usr/share/nginx/html/
 COPY script.js /usr/share/nginx/html/
+COPY pota_marker.png /usr/share/nginx/html/
+COPY pota-logo-38x38.png /usr/share/nginx/html/
 
 # Copy the Nginx configuration template
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
