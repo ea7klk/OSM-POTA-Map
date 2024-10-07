@@ -1,12 +1,8 @@
 # Use the official Nginx image as a parent image
 FROM nginx:alpine
 
-# Copy the static content to Nginx serve directory
-COPY index.html /usr/share/nginx/html/
-COPY styles.css /usr/share/nginx/html/
-COPY script.js /usr/share/nginx/html/
-COPY pota_marker.png /usr/share/nginx/html/
-COPY pota-logo-38x38.png /usr/share/nginx/html/
+# Copy all static content to Nginx serve directory in a single command
+COPY index.html styles.css script.js pota_marker.png pota-logo-38x38.png /usr/share/nginx/html/
 
 # Copy the Nginx configuration template
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
