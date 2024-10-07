@@ -113,7 +113,8 @@ function clearMap() {
 function createPopupContent(location) {
     const potaRef = location.tags['communication:amateur_radio:pota'];
     const commonName = location.tags['name'] || 'Unnamed Location';
-    return `${commonName}<br>POTA ID: <strong>${potaRef}</strong>`;
+    const potaLink = `https://pota.app/#/park/${potaRef}`;
+    return `<strong>${commonName}</strong><br>POTA ID: <a href="${potaLink}" target="_blank">${potaRef}</a>`;
 }
 
 // Custom icon for POTA markers
@@ -139,7 +140,7 @@ function addLocationsToMap(locations) {
         } else if (location.type === 'way' || location.type === 'route') {
             // Add lighter and brighter green line for the way or route, with double thickness
             const coordinates = location.geometry.map(point => [point.lat, point.lon]);
-            L.polyline(coordinates, {color: '#32CD32', weight: 3}).addTo(map);
+            L.polyline(coordinates, {color: '#32CD32', weight: 6}).addTo(map);
 
             // Add marker only for the first occurrence of this POTA reference
             if (!potaRefs.has(potaRef)) {
@@ -155,7 +156,7 @@ function addLocationsToMap(locations) {
                 location.members.forEach(member => {
                     if ((member.type === 'way' || member.type === 'route') && member.geometry) {
                         const coordinates = member.geometry.map(point => [point.lat, point.lon]);
-                        L.polyline(coordinates, {color: '#32CD32', weight: 3}).addTo(map);
+                        L.polyline(coordinates, {color: '#32CD32', weight: 6}).addTo(map);
                         relationCoordinates = relationCoordinates.concat(coordinates);
                     }
                 });
