@@ -1,32 +1,28 @@
-body, html {
+body {
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    height: 100%;
-    width: 100%;
     display: flex;
     flex-direction: column;
-    font-family: Arial, sans-serif;
+    min-height: 100vh;
 }
 
-header {
-    background-color: #f0f0f0;
-    padding: 10px;
+header, footer {
+    background-color: #2c3e50;
+    color: white;
     text-align: center;
+    padding: 1rem;
 }
 
-h1 {
+header h1 {
     margin: 0;
-    font-size: 24px;
 }
 
 #map {
     flex-grow: 1;
-    width: 100%;
+    height: calc(100vh - 120px);
 }
 
 footer {
-    background-color: #f0f0f0;
-    padding: 10px;
-    text-align: center;
-    font-size: 14px;
+    font-size: 0.8rem;
 }
