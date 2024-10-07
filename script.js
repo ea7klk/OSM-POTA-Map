@@ -54,18 +54,30 @@ map.on('moveend', function() {
     setCookie('mapLat', center.lat, 30);
     setCookie('mapLng', center.lng, 30);
     setCookie('mapZoom', zoom, 30);
+    fetchPOTALocations(); // Fetch new locations when map moves
 });
 
-// Overpass API query
-const query = `
-[out:json];
-nwr["communication:amateur_radio:pota"];
-out geom;
-`;
+// Function to create Overpass API query for visible area
+function createOverpassQuery() {
+    const bounds = map.getBounds();
+    const south = bounds.getSouth();
+    const west = bounds.getWest();
+    const north = bounds.getNorth();
+    const east = bounds.getEast();
+
+    return `
+    [out:json];
+    (
+      nwr["communication:amateur_radio:pota"](${south},${west},${north},${east});
+    );
+    out geom;
+    `;
+}
 
 // Function to fetch POTA locations
 async function fetchPOTALocations() {
     const overpassUrl = 'https://overpass-api.de/api/interpreter';
+    const query = createOverpassQuery();
     try {
         const response = await fetch(overpassUrl, {
             method: 'POST',
@@ -79,10 +91,27 @@ async function fetchPOTALocations() {
             throw new Error("Oops! We haven't received JSON!");
         }
         const data = await response.json();
-        return data.elements;
+        clearMap();
+        addLocationsToMap(data.elements);
     } catch (error) {
         console.error("There was a problem with the fetch operation:", error.message);
     }
+}
+
+// Function to clear existing markers and lines
+function clearMap() {
+    map.eachLayer(function (layer) {
+        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+            map.removeLayer(layer);
+        }
+    });
+}
+
+// Function to create popup content
+function createPopupContent(location) {
+    const potaRef = location.tags['communication:amateur_radio:pota'];
+    const commonName = location.tags['name'] || 'Unnamed Location';
+    return `<strong>${commonName}</strong><br>POTA ID: <strong>${potaRef}</strong>`;
 }
 
 // Function to add markers and lines to the map
@@ -91,11 +120,12 @@ function addLocationsToMap(locations) {
 
     locations.forEach(location => {
         const potaRef = location.tags['communication:amateur_radio:pota'];
+        const popupContent = createPopupContent(location);
 
         if (location.type === 'node') {
             L.marker([location.lat, location.lon])
                 .addTo(map)
-                .bindPopup(`POTA Reference: ${potaRef}`);
+                .bindPopup(popupContent);
         } else if (location.type === 'way' || location.type === 'route') {
             // Add green line for the way or route
             const coordinates = location.geometry.map(point => [point.lat, point.lon]);
@@ -107,7 +137,7 @@ function addLocationsToMap(locations) {
                 const firstPoint = coordinates[0];
                 L.marker(firstPoint)
                     .addTo(map)
-                    .bindPopup(`POTA Reference: ${potaRef}`);
+                    .bindPopup(popupContent);
             }
         } else if (location.type === 'relation') {
             if (location.members) {
@@ -123,18 +153,12 @@ function addLocationsToMap(locations) {
                     potaRefs.add(potaRef);
                     L.marker([location.center.lat, location.center.lon])
                         .addTo(map)
-                        .bindPopup(`POTA Reference: ${potaRef}`);
+                        .bindPopup(popupContent);
                 }
             }
         }
     });
 }
 
-// Fetch and display POTA locations
-fetchPOTALocations().then(locations => {
-    if (locations) {
-        addLocationsToMap(locations);
-    }
-}).catch(error => {
-    console.error("Error fetching or processing POTA locations:", error);
-});
+// Initial fetch of POTA locations
+fetchPOTALocations();
