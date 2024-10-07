@@ -49,24 +49,14 @@ L.control.locate({
     initialZoomLevel: 14
 }).addTo(map);
 
-let previousZoom = map.getZoom();
-let previousCenter = map.getCenter();
-
-// Save position and zoom level, and fetch new locations when map moves or zooms out
+// Save position and zoom level, and fetch new locations when map moves or zooms
 function updateMapState() {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapLat', center.lat, 30);
     setCookie('mapLng', center.lng, 30);
     setCookie('mapZoom', zoom, 30);
-    
-    // Check if the map has been moved or zoomed out
-    if (zoom < previousZoom || !previousCenter.equals(center)) {
-        fetchPOTALocations();
-    }
-    
-    previousZoom = zoom;
-    previousCenter = center;
+    fetchPOTALocations();
 }
 
 map.on('moveend', updateMapState);
@@ -91,7 +81,7 @@ function createOverpassQuery() {
 
 // Function to fetch POTA locations
 async function fetchPOTALocations() {
-    const overpassUrl = 'https://overpass-api.de/api/interpreter';
+    const overpassUrl = 'https://overpass.private.coffee/api/interpreter';
     const query = createOverpassQuery();
     try {
         const response = await fetch(overpassUrl, {
