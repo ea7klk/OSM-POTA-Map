@@ -120,7 +120,7 @@ function createPopupContent(location) {
 const potaIcon = L.icon({
     iconUrl: 'pota_marker.png',
     iconSize: [41, 41],
-    iconAnchor: [12, 41],
+    iconAnchor: [15, 1],
     popupAnchor: [1, -34]
 });
 
