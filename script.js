@@ -49,15 +49,18 @@ L.control.locate({
     initialZoomLevel: 14
 }).addTo(map);
 
-// Save position and zoom level when changed
-map.on('moveend', function() {
+// Save position and zoom level, and fetch new locations when map moves or zooms
+function updateMapState() {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapLat', center.lat, 30);
     setCookie('mapLng', center.lng, 30);
     setCookie('mapZoom', zoom, 30);
-    fetchPOTALocations(); // Fetch new locations when map moves
-});
+    fetchPOTALocations();
+}
+
+map.on('moveend', updateMapState);
+map.on('zoomend', updateMapState);
 
 // Function to create Overpass API query for visible area
 function createOverpassQuery() {
@@ -140,7 +143,7 @@ function addLocationsToMap(locations) {
         } else if (location.type === 'way' || location.type === 'route') {
             // Add lighter and brighter green line for the way or route, with double thickness
             const coordinates = location.geometry.map(point => [point.lat, point.lon]);
-            L.polyline(coordinates, {color: '#32CD32', weight: 6}).addTo(map);
+            L.polyline(coordinates, {color: '#43a047', weight: 3}).addTo(map);
 
             // Add marker only for the first occurrence of this POTA reference
             if (!potaRefs.has(potaRef)) {
@@ -156,7 +159,7 @@ function addLocationsToMap(locations) {
                 location.members.forEach(member => {
                     if ((member.type === 'way' || member.type === 'route') && member.geometry) {
                         const coordinates = member.geometry.map(point => [point.lat, point.lon]);
-                        L.polyline(coordinates, {color: '#32CD32', weight: 6}).addTo(map);
+                        L.polyline(coordinates, {color: '#43a047', weight: 3}).addTo(map);
                         relationCoordinates = relationCoordinates.concat(coordinates);
                     }
                 });
