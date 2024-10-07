@@ -116,7 +116,8 @@ function clearMap() {
 function createPopupContent(location) {
     const potaRef = location.tags['communication:amateur_radio:pota'];
     const commonName = location.tags['name'] || 'Unnamed Location';
-    return `${commonName}<br>POTA ID: <strong>${potaRef}</strong>`;
+    const potaLink = `https://pota.app/#/park/${potaRef}`;
+    return `<strong>${commonName}</strong><br>POTA ID: <a href="${potaLink}" target="_blank">${potaRef}</a>`;
 }
 
 // Custom icon for POTA markers
