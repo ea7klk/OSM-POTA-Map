@@ -90,7 +90,7 @@ function createOverpassQuery() {
 
 // Function to fetch POTA locations
 async function fetchPOTALocations() {
-    const overpassUrl = 'https://overpass.private.coffee/api/interpreter';
+    const overpassUrl = 'https://overpass-api.de/api/interpreter';
     const query = createOverpassQuery();
     try {
         const response = await fetch(overpassUrl, {
