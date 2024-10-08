@@ -150,15 +150,13 @@ function addLocationsToMap(locations) {
                 .addTo(map)
                 .bindPopup(popupContent);
         } else if (location.type === 'way' || location.type === 'route') {
-            // Add lighter and brighter green line for the way or route, with double thickness
             const coordinates = location.geometry.map(point => [point.lat, point.lon]);
             L.polyline(coordinates, {color: '#43a047', weight: 3}).addTo(map);
 
-            // Add marker only for the first occurrence of this POTA reference
             if (!potaRefs.has(potaRef)) {
                 potaRefs.add(potaRef);
-                const firstPoint = coordinates[0];
-                L.marker(firstPoint, {icon: potaIcon})
+                const center = L.polygon(coordinates).getBounds().getCenter();
+                L.marker(center, {icon: potaIcon})
                     .addTo(map)
                     .bindPopup(popupContent);
             }
@@ -173,15 +171,14 @@ function addLocationsToMap(locations) {
                     }
                 });
                 
-                // Add marker for the relation using the first coordinate of its members
                 if (relationCoordinates.length > 0 && !potaRefs.has(potaRef)) {
                     potaRefs.add(potaRef);
-                    L.marker(relationCoordinates[0], {icon: potaIcon})
+                    const center = L.polygon(relationCoordinates).getBounds().getCenter();
+                    L.marker(center, {icon: potaIcon})
                         .addTo(map)
                         .bindPopup(popupContent);
                 }
             } else if (location.center) {
-                // Fallback to using the center if no members are available
                 if (!potaRefs.has(potaRef)) {
                     potaRefs.add(potaRef);
                     L.marker([location.center.lat, location.center.lon], {icon: potaIcon})
