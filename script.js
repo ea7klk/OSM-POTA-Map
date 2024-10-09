@@ -49,23 +49,24 @@ L.control.locate({
     initialZoomLevel: 14
 }).addTo(map);
 
-// Variable to store the previous zoom level
-let previousZoom = initialZoom;
+// Variable to store the timeout
+let updateTimeout;
 
-// Save position and zoom level, and fetch new locations when map moves or zooms out
-function updateMapState(e) {
+// Save position and zoom level, and fetch new locations when map moves or zooms
+function updateMapState() {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapLat', center.lat, 30);
     setCookie('mapLng', center.lng, 30);
     setCookie('mapZoom', zoom, 30);
 
-    // Check if we're zooming out or if it's a move event
-    if (e.type === 'moveend' || (e.type === 'zoomend' && zoom < previousZoom)) {
-        fetchPOTALocations();
-    }
+    // Clear the existing timeout
+    clearTimeout(updateTimeout);
 
-    previousZoom = zoom;
+    // Set a new timeout
+    updateTimeout = setTimeout(() => {
+        fetchPOTALocations();
+    }, 1000); // Wait for 1 second of inactivity
 }
 
 map.on('moveend', updateMapState);
@@ -149,7 +150,7 @@ function addLocationsToMap(locations) {
             L.marker([location.lat, location.lon], {icon: potaIcon})
                 .addTo(map)
                 .bindPopup(popupContent);
-        } else if (location.type === 'way' || location.type === 'route') {
+        } else if (location.type === 'way') {
             const coordinates = location.geometry.map(point => [point.lat, point.lon]);
             L.polyline(coordinates, {color: '#43a047', weight: 3}).addTo(map);
 
@@ -164,7 +165,7 @@ function addLocationsToMap(locations) {
             if (location.members) {
                 let relationCoordinates = [];
                 location.members.forEach(member => {
-                    if ((member.type === 'way' || member.type === 'route') && member.geometry) {
+                    if (member.type === 'way' && member.geometry) {
                         const coordinates = member.geometry.map(point => [point.lat, point.lon]);
                         L.polyline(coordinates, {color: '#43a047', weight: 3}).addTo(map);
                         relationCoordinates = relationCoordinates.concat(coordinates);
