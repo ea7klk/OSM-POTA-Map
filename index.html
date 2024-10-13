@@ -14,35 +14,38 @@
     <meta property="og:image" content="https://your-website-url.com/pota-logo-38x38.png">
     <title>POTA (Parks on the Air) Map by Volker EA7KLK</title>
     <link rel="icon" type="image/png" href="pota-logo-38x38.png">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-    <link rel="stylesheet" href="styles.css">
-    <!-- Matomo -->
-    <script>
-      var _paq = window._paq = window._paq || [];
-      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-      _paq.push(['trackPageView']);
-      _paq.push(['enableLinkTracking']);
-      (function() {
-        var u="MATOMO_URL";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', 'MATOMO_SITE_ID']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-      })();
-    </script>
-    <!-- End Matomo Code -->
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+    <script src="https://unpkg.com/osmtogeojson@2.2.12/osmtogeojson.js"></script>
 </head>
 <body>
     <header>
-        <h1>POTA (Parks on the Air) Map by Volker EA7KLK</h1>
+        <h1>OSM POTA Map</h1>
     </header>
     <div id="map"></div>
     <footer>
         <p><a href="https://github.com/ea7klk/OSM-POTA-Map" target="_blank">POTA Map by Volker Kerkhoff</a>, EA7KLK, Montequinto, Spain. All data &copy; by Openstreetmap and its community. <br>POTA, <a href="https://pota.app" target="_blank">"Parks on the Air&reg;"</a> and the POTA logo are registered trademarks of Johnston Jason. This site is not affiliated with or endorsed by Parks on the Air&reg;. <br>The accuracy of data on this map depends on volunteers maintaining the data. If you are a regular participant in the POTA program, consider contributing. Instructions on how to contribute in OpenStreetMap will follow soon...</p>
     </footer>
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
-    <script src="script.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="/config.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Matomo tracking code
+        if (window.MATOMO_ENABLED === 'true') {
+            var _paq = window._paq = window._paq || [];
+            _paq.push(['trackPageView']);
+            _paq.push(['enableLinkTracking']);
+            (function() {
+                var u=window.MATOMO_URL;
+                _paq.push(['setTrackerUrl', u+'matomo.php']);
+                _paq.push(['setSiteId', window.MATOMO_SITE_ID]);
+                var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+                g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+            })();
+        }
+    </script>
 </body>
 </html>
