@@ -1,18 +1,25 @@
-# Use the official Nginx image as a parent image
-FROM nginx:alpine
+# Use Node.js 22.9 as the base image
+FROM node:22.9
 
-# Copy all static content to Nginx serve directory in a single command
-COPY index.html styles.css script.js pota_marker.png pota-logo-38x38.png /usr/share/nginx/html/
+# Set working directory
+WORKDIR /app
 
-# Copy the Nginx configuration template
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+# Copy package.json and package-lock.json
+COPY osm-pota-map/package*.json ./
 
-# Expose port 80
-EXPOSE 80
+# Install Node.js dependencies
+RUN npm install
 
-# Use the environment variables in the Nginx configuration
-ENV MATOMO_URL="https://example.com/"
-ENV MATOMO_SITE_ID="1"
+# Copy the rest of the application
+COPY osm-pota-map .
 
-# Start Nginx when the container has provisioned
-CMD ["nginx", "-g", "daemon off;"]
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Set environment variables with default values
+ENV MATOMO_ENABLED=false
+ENV MATOMO_URL=
+ENV MATOMO_SITE_ID=
+
+# Start the Node.js server
+CMD ["node", "server.js"]
