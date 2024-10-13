@@ -5,13 +5,13 @@ FROM node:22.9
 WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY osm-pota-map/package*.json ./
+COPY package*.json ./
 
 # Install Node.js dependencies
 RUN npm install
 
 # Copy the rest of the application
-COPY osm-pota-map .
+COPY ./ .
 
 # Expose the port the app runs on
 EXPOSE 3000
