@@ -63,8 +63,8 @@ class OSM4Leaflet extends L.Layer {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
         return L.latLngBounds(
-            L.latLng(Math.floor(sw.lat / 10) * 10, Math.floor(sw.lng / 10) * 10),
-            L.latLng(Math.ceil(ne.lat / 10) * 10, Math.ceil(ne.lng / 10) * 10)
+            L.latLng(Math.floor(sw.lat / 5) * 5, Math.floor(sw.lng / 5) * 5),
+            L.latLng(Math.ceil(ne.lat / 5) * 5, Math.ceil(ne.lng / 5) * 5)
         );
     }
 
