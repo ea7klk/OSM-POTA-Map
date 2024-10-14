@@ -43,14 +43,13 @@ class OSM4Leaflet extends L.Layer {
 
     loadData() {
         const bounds = this.map.getBounds();
-        const roundedBounds = this.roundBounds(bounds);
         
         if (!this.lastQueriedBounds || !this.lastQueriedBounds.contains(bounds)) {
-            const query = this.buildOverpassQuery(roundedBounds);
+            const query = this.buildOverpassQuery(bounds);
             this.fetchPOTAData(query).then(data => {
                 if (data) {
                     this.addData(data);
-                    this.lastQueriedBounds = roundedBounds;
+                    this.lastQueriedBounds = bounds;
                     this.clearErrorPopup();
                 } else {
                     this.showErrorPopup();
@@ -59,22 +58,14 @@ class OSM4Leaflet extends L.Layer {
         }
     }
 
-    roundBounds(bounds) {
-        const sw = bounds.getSouthWest();
-        const ne = bounds.getNorthEast();
-        return L.latLngBounds(
-            L.latLng(Math.floor(sw.lat / 5) * 5, Math.floor(sw.lng / 5) * 5),
-            L.latLng(Math.ceil(ne.lat / 5) * 5, Math.ceil(ne.lng / 5) * 5)
-        );
-    }
-
     buildOverpassQuery(bounds) {
         const { _southWest, _northEast } = bounds;
         return `nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});`;
     }
 
     async fetchPOTAData(query) {
-        const url = `/api/overpass?query=${encodeURIComponent(query)}`;
+        const overpassUrl = window.OVERPASS_URL || '/api/overpass';
+        const url = `${overpassUrl}?query=${encodeURIComponent(query)}`;
         
         try {
             const response = await fetch(url);
