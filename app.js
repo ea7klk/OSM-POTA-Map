@@ -5,7 +5,6 @@ class OSM4Leaflet extends L.Layer {
         this.options = L.Util.extend({}, this.options, options);
         this.baseLayer = null;
         this.markerLayer = L.layerGroup();
-        this.lastQueriedBounds = null;
         this.errorPopup = null;
     }
 
@@ -43,19 +42,31 @@ class OSM4Leaflet extends L.Layer {
 
     loadData() {
         const bounds = this.map.getBounds();
-        
-        if (!this.lastQueriedBounds || !this.lastQueriedBounds.contains(bounds)) {
-            const query = this.buildOverpassQuery(bounds);
-            this.fetchPOTAData(query).then(data => {
-                if (data) {
-                    this.addData(data);
-                    this.lastQueriedBounds = bounds;
-                    this.clearErrorPopup();
-                } else {
-                    this.showErrorPopup();
-                }
-            });
-        }
+        const extendedBounds = this.extendBounds(bounds);
+        const query = this.buildOverpassQuery(extendedBounds);
+        this.fetchPOTAData(query).then(data => {
+            if (data) {
+                this.addData(data);
+                this.clearErrorPopup();
+            } else {
+                this.showErrorPopup();
+            }
+        });
+    }
+
+    extendBounds(bounds) {
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+        const latPadding = (ne.lat - sw.lat) * 0.1;
+        const lngPadding = (ne.lng - sw.lng) * 0.1;
+        return L.latLngBounds(
+            L.latLng(this.roundCoordinate(sw.lat - latPadding), this.roundCoordinate(sw.lng - lngPadding)),
+            L.latLng(this.roundCoordinate(ne.lat + latPadding), this.roundCoordinate(ne.lng + lngPadding))
+        );
+    }
+
+    roundCoordinate(coord) {
+        return Math.round(coord * 100) / 100;
     }
 
     buildOverpassQuery(bounds) {
@@ -297,11 +308,15 @@ L.control.locate({
     initialZoomLevel: 11
 }).addTo(map);
 
-// Event listener for map moveend event
+// Event listeners for map move and zoom events
 map.on('moveend', () => {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapView', `${center.lat},${center.lng},${zoom}`, 30); // Save for 30 days
+    osmLayer.loadData();
+});
+
+map.on('zoomend', () => {
     osmLayer.loadData();
 });
 
