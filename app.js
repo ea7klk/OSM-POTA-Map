@@ -148,7 +148,7 @@ class OSM4Leaflet extends L.Layer {
 
                     const name = feature.properties.tags.name || 'Unnamed';
 
-                    const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA: ${potaId}</div>`;
+                    const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a></div>`;
 
                     const marker = L.marker(center, {
                         icon: L.icon({
@@ -259,7 +259,7 @@ const osmLayer = new OSM4Leaflet({
         onEachFeature: function(feature, layer) {
             const name = feature.properties.tags.name || 'Unnamed';
             const potaId = feature.properties.tags['communication:amateur_radio:pota'];
-            const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA: ${potaId}</div>`;
+            const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a></div>`;
             layer.bindPopup(popupContent);
 
             layer.on({
