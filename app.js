@@ -15,7 +15,8 @@ class OSM4Leaflet extends L.Layer {
         }
         this.map.addLayer(this.baseLayer);
         this.map.addLayer(this.markerLayer);
-        this.loadData();
+        
+        // Remove loadData() call from here
 
         // Add event listeners
         this.map.on('zoomend', this.clearErrorPopup, this);
@@ -303,15 +304,11 @@ L.control.locate({
     initialZoomLevel: 11
 }).addTo(map);
 
-// Event listeners for map move and zoom events
-map.on('moveend', () => {
+// Combine moveend and zoomend events into a single listener
+map.on('moveend zoomend', () => {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapView', `${center.lat},${center.lng},${zoom}`, 30); // Save for 30 days
-    osmLayer.loadData();
-});
-
-map.on('zoomend', () => {
     osmLayer.loadData();
 });
 
