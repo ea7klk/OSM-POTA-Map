@@ -57,16 +57,10 @@ class OSM4Leaflet extends L.Layer {
     extendBounds(bounds) {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
-        const latPadding = (ne.lat - sw.lat) * 0.1;
-        const lngPadding = (ne.lng - sw.lng) * 0.1;
         return L.latLngBounds(
-            L.latLng(this.roundCoordinate(sw.lat - latPadding), this.roundCoordinate(sw.lng - lngPadding)),
-            L.latLng(this.roundCoordinate(ne.lat + latPadding), this.roundCoordinate(ne.lng + lngPadding))
+            L.latLng(Math.floor(sw.lat), Math.floor(sw.lng)),
+            L.latLng(Math.ceil(ne.lat), Math.ceil(ne.lng))
         );
-    }
-
-    roundCoordinate(coord) {
-        return Math.round(coord * 100) / 100;
     }
 
     buildOverpassQuery(bounds) {
