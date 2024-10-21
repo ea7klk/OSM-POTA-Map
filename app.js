@@ -277,7 +277,8 @@ const osmLayer = new OSM4Leaflet({
                     osmLayer.baseLayer.resetStyle(e.target);
                 },
                 click: function(e) {
-                    map.fitBounds(e.target.getBounds());
+                    // Removed fitBounds to prevent zooming on click
+                    e.target.openPopup();
                 }
             });
         },
