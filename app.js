@@ -15,7 +15,8 @@ class OSM4Leaflet extends L.Layer {
         }
         this.map.addLayer(this.baseLayer);
         this.map.addLayer(this.markerLayer);
-        this.loadData();
+        
+        // Remove loadData() call from here
 
         // Add event listeners
         this.map.on('zoomend', this.clearErrorPopup, this);
@@ -57,16 +58,10 @@ class OSM4Leaflet extends L.Layer {
     extendBounds(bounds) {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
-        const latPadding = (ne.lat - sw.lat) * 0.1;
-        const lngPadding = (ne.lng - sw.lng) * 0.1;
         return L.latLngBounds(
-            L.latLng(this.roundCoordinate(sw.lat - latPadding), this.roundCoordinate(sw.lng - lngPadding)),
-            L.latLng(this.roundCoordinate(ne.lat + latPadding), this.roundCoordinate(ne.lng + lngPadding))
+            L.latLng(Math.floor(sw.lat), Math.floor(sw.lng)),
+            L.latLng(Math.ceil(ne.lat), Math.ceil(ne.lng))
         );
-    }
-
-    roundCoordinate(coord) {
-        return Math.round(coord * 100) / 100;
     }
 
     buildOverpassQuery(bounds) {
@@ -124,50 +119,52 @@ class OSM4Leaflet extends L.Layer {
         this.baseLayer.clearLayers();
         this.markerLayer.clearLayers();
         
-        this.baseLayer.addData(geojson);
-
-        const potaIdSet = new Set();
+        const potaElements = new Map();
 
         geojson.features.forEach(feature => {
             if (feature.geometry) {
-                const potaId = feature.properties.tags['communication:amateur_radio:pota'];
-                if (potaId && !potaIdSet.has(potaId)) {
-                    potaIdSet.add(potaId);
-
-                    let center;
-                    if (feature.geometry.type === 'Point') {
-                        center = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-                    } else if (feature.geometry.type === 'LineString') {
-                        const coords = feature.geometry.coordinates;
-                        const midIndex = Math.floor(coords.length / 2);
-                        center = L.latLng(coords[midIndex][1], coords[midIndex][0]);
-                    } else {
-                        const bounds = L.geoJSON(feature).getBounds();
-                        center = bounds.getCenter();
+                let potaId = feature.properties.tags['communication:amateur_radio:pota'];
+                if (!potaId && feature.properties.relations) {
+                    // Check if the feature is a sub-element of a relation
+                    const relation = feature.properties.relations.find(r => r.tags && r.tags['communication:amateur_radio:pota']);
+                    if (relation) {
+                        potaId = relation.tags['communication:amateur_radio:pota'];
                     }
-
-                    const name = feature.properties.tags.name || 'Unnamed';
-
-                    const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA: ${potaId}</div>`;
-
-                    const marker = L.marker(center, {
-                        icon: L.icon({
-                            iconUrl: 'pota_marker.png',
-                            iconSize: [41, 41],
-                            iconAnchor: [20, 41],
-                            popupAnchor: [0, -41]
-                        })
-                    }).addTo(this.markerLayer);
-                    marker.bindPopup(popupContent);
-
-                    // Add event listeners to the marker
-                    marker.on({
-                        mouseover: () => this.highlightFeature(feature),
-                        mouseout: () => this.resetHighlight(feature),
-                        click: () => this.highlightFeature(feature)
-                    });
                 }
+                if (potaId) {
+                    if (!potaElements.has(potaId)) {
+                        potaElements.set(potaId, []);
+                    }
+                    potaElements.get(potaId).push(feature);
+                }
+                // Always add the feature to the base layer, even if it's not associated with a POTA ID
+                this.baseLayer.addData(feature);
             }
+        });
+
+        potaElements.forEach((features, potaId) => {
+            const bounds = L.geoJSON(features).getBounds();
+            const center = bounds.getCenter();
+
+            const name = features[0].properties.tags.name || 'Unnamed';
+            const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a></div>`;
+
+            const marker = L.marker(center, {
+                icon: L.icon({
+                    iconUrl: 'pota_marker.png',
+                    iconSize: [41, 41],
+                    iconAnchor: [20, 41],
+                    popupAnchor: [0, -41]
+                })
+            }).addTo(this.markerLayer);
+            marker.bindPopup(popupContent);
+
+            // Add event listeners to the marker
+            marker.on({
+                mouseover: () => this.highlightFeatures(features),
+                mouseout: () => this.resetHighlightFeatures(features),
+                click: () => this.highlightFeatures(features)
+            });
         });
 
         if (this.options.afterParse) {
@@ -175,24 +172,28 @@ class OSM4Leaflet extends L.Layer {
         }
     }
 
-    highlightFeature(feature) {
-        const layer = this.baseLayer.getLayers().find(layer => layer.feature === feature);
-        if (layer) {
-            layer.setStyle({
-                color: darkenColor('#43a047', 15),
-                fillColor: darkenColor('#43a047', 15),
-                weight: 4,
-                opacity: 0.7,
-                fillOpacity: 0.45  // 15% darker than 0.3
-            });
-        }
+    highlightFeatures(features) {
+        features.forEach(feature => {
+            const layer = this.baseLayer.getLayers().find(layer => layer.feature === feature);
+            if (layer) {
+                layer.setStyle({
+                    color: darkenColor('#43a047', 15),
+                    fillColor: darkenColor('#43a047', 15),
+                    weight: 4,
+                    opacity: 0.7,
+                    fillOpacity: 0.45  // 15% darker than 0.3
+                });
+            }
+        });
     }
 
-    resetHighlight(feature) {
-        const layer = this.baseLayer.getLayers().find(layer => layer.feature === feature);
-        if (layer) {
-            this.baseLayer.resetStyle(layer);
-        }
+    resetHighlightFeatures(features) {
+        features.forEach(feature => {
+            const layer = this.baseLayer.getLayers().find(layer => layer.feature === feature);
+            if (layer) {
+                this.baseLayer.resetStyle(layer);
+            }
+        });
     }
 
     getBaseLayer() {
@@ -258,9 +259,17 @@ const osmLayer = new OSM4Leaflet({
         },
         onEachFeature: function(feature, layer) {
             const name = feature.properties.tags.name || 'Unnamed';
-            const potaId = feature.properties.tags['communication:amateur_radio:pota'];
-            const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA: ${potaId}</div>`;
-            layer.bindPopup(popupContent);
+            let potaId = feature.properties.tags['communication:amateur_radio:pota'];
+            if (!potaId && feature.properties.relations) {
+                const relation = feature.properties.relations.find(r => r.tags && r.tags['communication:amateur_radio:pota']);
+                if (relation) {
+                    potaId = relation.tags['communication:amateur_radio:pota'];
+                }
+            }
+            if (potaId) {
+                const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a></div>`;
+                layer.bindPopup(popupContent);
+            }
 
             layer.on({
                 mouseover: function(e) {
@@ -277,7 +286,8 @@ const osmLayer = new OSM4Leaflet({
                     osmLayer.baseLayer.resetStyle(e.target);
                 },
                 click: function(e) {
-                    map.fitBounds(e.target.getBounds());
+                    // Removed fitBounds to prevent zooming on click
+                    e.target.openPopup();
                 }
             });
         },
@@ -308,15 +318,11 @@ L.control.locate({
     initialZoomLevel: 11
 }).addTo(map);
 
-// Event listeners for map move and zoom events
-map.on('moveend', () => {
+// Combine moveend and zoomend events into a single listener
+map.on('moveend zoomend', () => {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapView', `${center.lat},${center.lng},${zoom}`, 30); // Save for 30 days
-    osmLayer.loadData();
-});
-
-map.on('zoomend', () => {
     osmLayer.loadData();
 });
 
