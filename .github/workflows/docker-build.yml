@@ -2,16 +2,9 @@ name: Docker Build and Push
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  release:
-    types: [created]
+    tags:
+      - 'v*.*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Semantic version (e.g., 1.0.0)'
-        required: true
 
 env:
   REGISTRY: ghcr.io
