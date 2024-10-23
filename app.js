@@ -1,3 +1,9 @@
+//Add Material Icons font
+const link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
+document.head.appendChild(link);
+
 // OSM4Leaflet class implementation
 class OSM4Leaflet extends L.Layer {
     constructor(options) {
@@ -119,6 +125,7 @@ class OSM4Leaflet extends L.Layer {
         this.baseLayer.clearLayers();
         this.markerLayer.clearLayers();
         
+        const currentZoom = this.map.getZoom();
         const potaElements = new Map();
 
         geojson.features.forEach(feature => {
@@ -131,39 +138,87 @@ class OSM4Leaflet extends L.Layer {
                         potaId = relation.tags['communication:amateur_radio:pota'];
                     }
                 }
+                
+                const isUnmapped = feature.properties.tags['unmapped_osm'] === 'true';
+                
+                // Skip unmapped features if zoom level is <= 8
+                if (isUnmapped && currentZoom <= 8) {
+                    return;
+                }
+                
                 if (potaId) {
                     if (!potaElements.has(potaId)) {
                         potaElements.set(potaId, []);
                     }
                     potaElements.get(potaId).push(feature);
                 }
-                // Always add the feature to the base layer, even if it's not associated with a POTA ID
+                
+                // Add to base layer only if not unmapped or zoom level > 8
                 this.baseLayer.addData(feature);
             }
         });
 
         potaElements.forEach((features, potaId) => {
-            const bounds = L.geoJSON(features).getBounds();
-            const center = bounds.getCenter();
+            const isRelationWithOnlyWays = features.every(f => f.geometry.type === 'LineString' || f.geometry.type === 'Polygon');
+            
+            let center;
+            if (isRelationWithOnlyWays) {
+                // Calculate the center of the relation (top-level element)
+                const bounds = L.geoJSON(features).getBounds();
+                center = bounds.getCenter();
+            } else {
+                // For other cases, use the center of all features
+                const bounds = L.geoJSON(features).getBounds();
+                center = bounds.getCenter();
+            }
 
             const name = features[0].properties.tags.name || 'Unnamed';
-            const popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a></div>`;
+            const isUnmapped = features[0].properties.tags['unmapped_osm'] === 'true';
 
-            const marker = L.marker(center, {
-                icon: L.icon({
-                    iconUrl: 'pota_marker.png',
-                    iconSize: [41, 41],
-                    iconAnchor: [20, 41],
-                    popupAnchor: [0, -41]
-                })
-            }).addTo(this.markerLayer);
+            // Skip marker creation for unmapped features if zoom level is <= 8
+            if (isUnmapped && currentZoom <= 8) {
+                return;
+            }
+
+            let popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a>`;
+            if (isUnmapped) {
+                popupContent += `<br><br>This POTA entity has not been mapped in OpenStreetMap yet.<br>You can contribute by following the instructions <a href="#">here</a>.`;
+            }
+            popupContent += '</div>';
+
+            let marker;
+            if (isUnmapped) {
+                // Create a div element with Material Icons
+                const iconHtml = '<span class="material-icons" style="font-size: 22px; color: #8b0000;">info</span>';
+                const infoIcon = L.divIcon({
+                    html: iconHtml,
+                    className: 'material-icons-marker',
+                    iconSize: [22, 22],
+                    iconAnchor: [11, 11],
+                    popupAnchor: [0, -11]
+                });
+                marker = L.marker(center, { icon: infoIcon });
+            } else {
+                marker = L.marker(center, {
+                    icon: L.icon({
+                        iconUrl: 'pota_marker.png',
+                        iconSize: [41, 41],
+                        iconAnchor: [20, 41],
+                        popupAnchor: [0, -41]
+                    })
+                });
+            }
+            marker.addTo(this.markerLayer);
             marker.bindPopup(popupContent);
 
             // Add event listeners to the marker
             marker.on({
                 mouseover: () => this.highlightFeatures(features),
                 mouseout: () => this.resetHighlightFeatures(features),
-                click: () => this.highlightFeatures(features)
+                click: () => {
+                    this.highlightFeatures(features);
+                    marker.openPopup();
+                }
             });
         });
 
