@@ -21,6 +21,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Get tag
+        id: get_tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
@@ -41,9 +45,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
+            type=ref,event=tag
             type=semver,pattern={{version}}
             type=sha
+            type=raw,value=${{ steps.get_tag.outputs.tag }}
 
       - name: Build and push Docker image
         id: build-and-push
