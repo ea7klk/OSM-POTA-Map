@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const axios = require('axios');
 const app = express();
 const port = 3000;
 
@@ -26,23 +25,6 @@ app.get('/config.js', (req, res) => {
         window.MATOMO_SITE_ID = '${MATOMO_SITE_ID}';
         window.OVERPASS_URL = '${OVERPASS_URL}';
     `);
-});
-
-app.get('/api/overpass', async (req, res) => {
-    const query = req.query.query;
-    console.log("Query received:", query);
-    const fullQuery = `[out:json];(${query});out geom;`;
-    const encoded = encodeURIComponent(fullQuery);
-    const url = `${OVERPASS_URL}?data=${encoded}`;
-
-    try {
-        const response = await axios.get(url);
-        const data = response.data;
-        res.json(data);
-    } catch (error) {
-        console.error('Error fetching POTA data:', error);
-        res.status(500).json({ error: 'Failed to fetch data from Overpass API' });
-    }
 });
 
 app.listen(port, () => {

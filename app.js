@@ -12,6 +12,7 @@ class OSM4Leaflet extends L.Layer {
         this.baseLayer = null;
         this.markerLayer = L.layerGroup();
         this.errorPopup = null;
+        this.loadDataTimeout = null;
     }
 
     onAdd(map) {
@@ -47,6 +48,15 @@ class OSM4Leaflet extends L.Layer {
         this.baseLayer = new BaseLayerClass(null, this.options.baseLayerOptions);
     }
 
+    debouncedLoadData() {
+        if (this.loadDataTimeout) {
+            clearTimeout(this.loadDataTimeout);
+        }
+        this.loadDataTimeout = setTimeout(() => {
+            this.loadData();
+        }, 250); // 250ms debounce delay
+    }
+
     loadData() {
         const bounds = this.map.getBounds();
         const extendedBounds = this.extendBounds(bounds);
@@ -80,7 +90,12 @@ class OSM4Leaflet extends L.Layer {
         const url = `${overpassUrl}?query=${encodeURIComponent(query)}`;
         
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                headers: {
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Accept': 'application/json'
+                }
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -373,12 +388,16 @@ L.control.locate({
     initialZoomLevel: 11
 }).addTo(map);
 
-// Combine moveend and zoomend events into a single listener
-map.on('moveend zoomend', () => {
+// Save map state on any map movement
+map.on('moveend', () => {
     const center = map.getCenter();
     const zoom = map.getZoom();
     setCookie('mapView', `${center.lat},${center.lng},${zoom}`, 30); // Save for 30 days
-    osmLayer.loadData();
+});
+
+// Load data only on moveend, with debounce
+map.on('moveend', () => {
+    osmLayer.debouncedLoadData();
 });
 
 // Initial data load
