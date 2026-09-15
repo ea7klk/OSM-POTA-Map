@@ -51,6 +51,8 @@ To build and run this application using Docker, follow these steps:
 
 The application uses the following optional environment variables:
 
+- `OVERPASS_URL`: The Overpass API interpreter endpoint. It defaults to
+  `https://overpass.ea7klk.es/api/interpreter`.
 - `MATOMO_URL`: The URL of your Matomo analytics instance.
 - `MATOMO_SITE_ID`: The site ID for your application in Matomo.
 

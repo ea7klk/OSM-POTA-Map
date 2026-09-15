@@ -9,7 +9,7 @@ const MATOMO_URL = process.env.MATOMO_URL || '';
 const MATOMO_SITE_ID = process.env.MATOMO_SITE_ID || '';
 
 // Overpass URL configuration
-const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass-api.de/api/interpreter';
+const OVERPASS_URL = process.env.OVERPASS_URL || 'https://overpass.ea7klk.es/api/interpreter';
 
 app.use(express.static(path.join(__dirname, '.')));
 
