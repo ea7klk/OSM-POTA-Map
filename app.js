@@ -82,12 +82,12 @@ class OSM4Leaflet extends L.Layer {
 
     buildOverpassQuery(bounds) {
         const { _southWest, _northEast } = bounds;
-        return `nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});`;
+        return `[out:json];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out;`;
     }
 
     async fetchPOTAData(query) {
         const overpassUrl = window.OVERPASS_URL || 'https://overpass.ea7klk.es/api/interpreter';
-        const url = `${overpassUrl}?query=${encodeURIComponent(query)}`;
+        const url = `${overpassUrl}?data=${encodeURIComponent(query)}`;
         
         try {
             const response = await fetch(url, {
