@@ -82,7 +82,7 @@ class OSM4Leaflet extends L.Layer {
 
     buildOverpassQuery(bounds) {
         const { _southWest, _northEast } = bounds;
-        return `[out:json];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out;`;
+        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out geom;`;
     }
 
     async fetchPOTAData(query) {
