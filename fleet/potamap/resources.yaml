@@ -42,7 +42,7 @@
             "command": [
               "docker-entrypoint.sh"
             ],
-            "image": "ghcr.io/ea7klk/osm-pota-map@sha256:2193b4b3b58e83ea0edb136d4ad932cf703bd834d2a1add2bee3d0d63c06eea6",
+            "image": "ghcr.io/ea7klk/osm-pota-map@sha256:15cb4689eaaa2d4e5101f81a18a991519d945bfe343aa10a00aa42b38da8ca2a",
             "imagePullPolicy": "IfNotPresent",
             "name": "potamap",
             "ports": [
