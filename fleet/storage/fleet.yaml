@@ -1,0 +1,4 @@
+helm:
+  releaseName: osm-pota-map-storage
+  timeoutSeconds: 300
+takeOwnership: true
