@@ -15,7 +15,19 @@ class OSM4Leaflet extends L.Layer {
             showCoverageOnHover: false,
             spiderfyOnMaxZoom: true
         });
-        this.catalogueLayer = L.layerGroup();
+        this.catalogueLayer = L.markerClusterGroup({
+            chunkedLoading: true,
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true,
+            iconCreateFunction: cluster => {
+                const childCount = cluster.getChildCount();
+                return L.divIcon({
+                    html: `<span class="pota-catalogue-cluster-count">${childCount}</span>`,
+                    className: 'pota-catalogue-cluster',
+                    iconSize: [44, 44]
+                });
+            }
+        });
         this.errorPopup = null;
         this.loadDataTimeout = null;
         this.loadRequestId = 0;

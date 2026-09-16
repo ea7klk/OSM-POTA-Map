@@ -37,6 +37,33 @@ header h1 {
     font-size: 24px;
 }
 
+.pota-catalogue-cluster {
+    align-items: center;
+    background: rgba(255, 143, 0, 0.3);
+    border: 2px solid #a34800;
+    border-radius: 50%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+}
+
+.pota-catalogue-cluster-count {
+    align-items: center;
+    background: #a34800;
+    border: 2px solid #fff8e1;
+    border-radius: 50%;
+    box-sizing: border-box;
+    color: #fff;
+    display: flex;
+    font-size: 13px;
+    font-weight: 700;
+    height: 30px;
+    justify-content: center;
+    line-height: 1;
+    min-width: 30px;
+    padding: 0 4px;
+}
+
 .pota-catalogue-popup {
     max-width: 280px;
     text-align: center;

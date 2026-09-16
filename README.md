@@ -88,6 +88,8 @@ configured Overpass server. Its `/api/pota/unmapped` endpoint returns only CSV
 parks whose references are absent from OSM, filtered to the requested bounding
 box. The Leaflet catalogue layer displays those parks at their POTA-provided
 coordinates and includes a link for adding the reference to OpenStreetMap.
+Unmapped catalogue parks cluster independently from OSM markers and use a
+distinct amber cluster icon.
 
 OSM geometries and markers remain on the OSM layer. The CSV catalogue is never
 inserted into the replicated Overpass database. The map server loads the CSV on
