@@ -1,0 +1,11 @@
+defaultNamespace: kube-system
+helm:
+  releaseName: sealed-secrets
+  repo: https://bitnami.github.io/sealed-secrets
+  chart: sealed-secrets
+  version: 2.20.0
+  timeoutSeconds: 300
+  values:
+    fullnameOverride: sealed-secrets-controller
+    namespace: kube-system
+    secretName: sealed-secrets-key
