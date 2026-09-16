@@ -72,6 +72,8 @@ docker run -d -p 8080:80 -e MATOMO_URL="https://your-matomo-url.com/" -e MATOMO_
 
 Contributions to improve the map data are welcome. If you're a regular participant in the POTA program, consider contributing to OpenStreetMap to enhance the accuracy and completeness of the data.
 
+See [how to add a POTA reference to OpenStreetMap](docs/adding-pota-reference-to-osm.md), including the worked example for Sant Llorenç del Munt i l'Obac Nature Park (ES-0142).
+
 ## Author
 
 Volker Kerkhoff, EA7KLK
@@ -92,4 +94,4 @@ For any queries or suggestions, please contact Volker Kerkhoff, EA7KLK.
 
 ---
 
-Note: The accuracy and completeness of the map data depend on volunteers maintaining the OpenStreetMap database. Instructions on how to contribute to OpenStreetMap will be provided soon.
+Note: The accuracy and completeness of the map data depend on volunteers maintaining the OpenStreetMap database.

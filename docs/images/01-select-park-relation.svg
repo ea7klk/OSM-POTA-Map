@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Select the existing park relation in iD</title>
+  <desc id="desc">Illustration of OpenStreetMap iD with the existing nature park relation selected and its relation identifier shown in the feature panel.</desc>
+  <rect width="1200" height="650" fill="#f2f4f6"/>
+  <rect x="0" y="0" width="1200" height="48" fill="#354c5b"/>
+  <circle cx="28" cy="24" r="13" fill="#8bb3c9"/><path d="M21 24h14M28 17v14" stroke="#fff" stroke-width="2"/>
+  <text x="52" y="30" font-family="Arial,sans-serif" font-size="18" fill="#fff" font-weight="700">OpenStreetMap</text>
+  <text x="940" y="30" font-family="Arial,sans-serif" font-size="14" fill="#e8eef1">Edit with iD</text>
+  <rect x="0" y="48" width="1200" height="42" fill="#fff" stroke="#d3d9dd"/>
+  <text x="20" y="75" font-family="Arial,sans-serif" font-size="15" fill="#263943">Sant Llorenç del Munt i l'Obac Nature Park</text>
+  <rect x="0" y="90" width="350" height="560" fill="#fff" stroke="#d3d9dd"/>
+  <rect x="0" y="90" width="54" height="560" fill="#f6f7f8" stroke="#d3d9dd"/>
+  <g fill="#647681" font-family="Arial,sans-serif" font-size="18" text-anchor="middle">
+    <text x="27" y="133">⌖</text><text x="27" y="184">＋</text><text x="27" y="235">↶</text><text x="27" y="286">↷</text><text x="27" y="337">?</text>
+  </g>
+  <text x="76" y="130" font-family="Arial,sans-serif" font-size="13" fill="#60737d" font-weight="700" letter-spacing="1">SELECTED FEATURE</text>
+  <text x="76" y="166" font-family="Arial,sans-serif" font-size="23" fill="#243b49" font-weight="700">Nature reserve</text>
+  <text x="76" y="196" font-family="Arial,sans-serif" font-size="14" fill="#485d67">Parc Natural de Sant Llorenç</text>
+  <text x="76" y="217" font-family="Arial,sans-serif" font-size="14" fill="#485d67">del Munt i l'Obac</text>
+  <line x1="72" y1="240" x2="330" y2="240" stroke="#e0e5e8"/>
+  <text x="76" y="269" font-family="Arial,sans-serif" font-size="13" fill="#60737d">BOUNDARY</text>
+  <text x="76" y="292" font-family="Arial,sans-serif" font-size="15" fill="#263943">Protected area</text>
+  <text x="76" y="321" font-family="Arial,sans-serif" font-size="13" fill="#60737d">RELATIONS</text>
+  <rect x="72" y="337" width="254" height="82" rx="5" fill="#eaf4f8" stroke="#4d91b0" stroke-width="2"/>
+  <text x="86" y="362" font-family="Arial,sans-serif" font-size="14" fill="#164e68" font-weight="700">Multipolygon relation</text>
+  <text x="86" y="386" font-family="Arial,sans-serif" font-size="13" fill="#28586c">2064676 · whole park</text>
+  <text x="86" y="405" font-family="Arial,sans-serif" font-size="12" fill="#54717d">9 boundary members</text>
+  <rect x="350" y="90" width="850" height="560" fill="#e9eee8"/>
+  <path d="M350 164 C470 116 566 143 625 181 S770 247 851 213 1039 120 1200 157 L1200 90 350 90Z" fill="#d8e6eb"/>
+  <path d="M350 164 C470 116 566 143 625 181 S770 247 851 213 1039 120 1200 157" fill="none" stroke="#a9c6d0" stroke-width="3"/>
+  <g fill="none" stroke="#fff" stroke-width="7" opacity=".95">
+    <path d="M380 540 C480 454 486 388 570 337 S713 274 762 190"/><path d="M392 587 C530 498 607 477 671 395 S794 331 923 303 1084 235 1168 195"/>
+    <path d="M437 125 C504 198 559 224 646 224 S805 248 912 191 1060 169 1180 216"/>
+  </g>
+  <g fill="none" stroke="#c7b998" stroke-width="3"><path d="M376 456 C524 399 607 329 759 323 S1003 337 1186 275"/><path d="M429 610 C518 537 573 505 637 442"/></g>
+  <path d="M529 238 C585 190 693 187 765 214 C835 241 941 231 1008 275 C1054 305 1036 382 1008 421 C969 476 925 521 857 538 C777 557 695 529 638 493 C574 453 504 419 481 360 C461 309 489 272 529 238Z" fill="#8fbd87" fill-opacity=".35" stroke="#217f52" stroke-width="5"/>
+  <path d="M632 340 C658 316 700 316 720 343 C740 371 718 404 684 410 C652 415 619 382 632 340Z" fill="#d8e6eb" stroke="#a9c6d0" stroke-width="2"/>
+  <text x="665" y="279" font-family="Arial,sans-serif" font-size="17" fill="#294439" font-weight="700">Parc Natural de Sant Llorenç</text>
+  <rect x="781" y="112" width="374" height="56" rx="7" fill="#fff" stroke="#286b8a" stroke-width="2"/>
+  <text x="800" y="136" font-family="Arial,sans-serif" font-size="14" fill="#214d62" font-weight="700">Select the feature representing the whole park</text>
+  <text x="800" y="155" font-family="Arial,sans-serif" font-size="12" fill="#526b76">Use the relation, not a single boundary segment.</text>
+  <path d="M813 168 L768 216" fill="none" stroke="#286b8a" stroke-width="3" marker-end="url(#arrow)"/>
+  <circle cx="780" cy="222" r="7" fill="#fff" stroke="#286b8a" stroke-width="3"/>
+  <rect x="680" y="574" width="472" height="45" rx="6" fill="#fff" stroke="#b8c8ce"/>
+  <text x="700" y="602" font-family="Arial,sans-serif" font-size="14" fill="#344f5c">Illustration only · map shape is schematic, not park data</text>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#286b8a"/></marker></defs>
+</svg>

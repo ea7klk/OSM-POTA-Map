@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Review and upload the OSM edit</title>
+  <desc id="desc">Illustration of the iD save dialog with a precise changeset comment and upload button after a tag-only change.</desc>
+  <rect width="1200" height="650" fill="#e9eee8"/>
+  <rect x="0" y="0" width="1200" height="48" fill="#354c5b"/>
+  <text x="24" y="30" font-family="Arial,sans-serif" font-size="18" fill="#fff" font-weight="700">OpenStreetMap · iD</text>
+  <g fill="none" stroke="#fff" stroke-width="8" opacity=".8"><path d="M0 550 C183 412 268 435 398 349 S619 313 741 215 1007 162 1200 75"/><path d="M-20 142 C162 229 268 211 407 169 S673 210 840 278 1011 308 1216 245"/><path d="M129 650 C229 549 291 498 390 444 S545 418 632 336"/></g>
+  <path d="M151 225 C237 167 327 178 389 220 C445 258 526 259 569 316 C606 366 551 441 493 477 C420 522 329 521 261 485 C190 447 120 343 151 225Z" fill="#8fbd87" fill-opacity=".35" stroke="#217f52" stroke-width="4"/>
+  <rect x="276" y="78" width="650" height="500" rx="8" fill="#fff" stroke="#aebcc2" stroke-width="2"/>
+  <rect x="276" y="78" width="650" height="64" rx="8" fill="#f8fafb"/>
+  <text x="312" y="119" font-family="Arial,sans-serif" font-size="23" fill="#263943" font-weight="700">Review and upload</text>
+  <text x="312" y="177" font-family="Arial,sans-serif" font-size="14" fill="#455d67" font-weight="700">Changeset comment</text>
+  <rect x="312" y="191" width="578" height="84" rx="4" fill="#fff" stroke="#869aa4" stroke-width="2"/>
+  <text x="330" y="223" font-family="Arial,sans-serif" font-size="15" fill="#263943">Add POTA reference ES-0142 to Sant Llorenç</text>
+  <text x="330" y="248" font-family="Arial,sans-serif" font-size="15" fill="#263943">del Munt i l'Obac Nature Park</text>
+  <text x="312" y="317" font-family="Arial,sans-serif" font-size="14" fill="#455d67" font-weight="700">Review your changes</text>
+  <rect x="312" y="332" width="578" height="92" rx="5" fill="#f4f7f8" stroke="#d6dfe3"/>
+  <circle cx="339" cy="363" r="8" fill="#248451"/>
+  <text x="361" y="368" font-family="Arial,sans-serif" font-size="14" fill="#344f5c">1 tag added to relation 2064676</text>
+  <text x="361" y="394" font-family="Arial,sans-serif" font-size="13" fill="#637982">No boundary geometry changed</text>
+  <rect x="312" y="457" width="578" height="54" rx="5" fill="#fff8df" stroke="#e0c66e"/>
+  <text x="331" y="489" font-family="Arial,sans-serif" font-size="13" fill="#6d5a1a">Only upload after checking the selected feature and any warnings.</text>
+  <rect x="715" y="526" width="175" height="39" rx="5" fill="#16824d"/>
+  <text x="802" y="551" font-family="Arial,sans-serif" font-size="15" fill="#fff" text-anchor="middle" font-weight="700">Upload</text>
+  <rect x="310" y="526" width="112" height="39" rx="5" fill="#f5f7f8" stroke="#bcc9ce"/>
+  <text x="366" y="551" font-family="Arial,sans-serif" font-size="14" fill="#445963" text-anchor="middle">Cancel</text>
+  <text x="431" y="550" font-family="Arial,sans-serif" font-size="13" fill="#667b84">Upload publishes this edit to OSM.</text>
+</svg>
