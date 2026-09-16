@@ -1,6 +1,5 @@
 (function () {
     const MAX_BBOX_AREA_KM2 = 50_000_000;
-    const MAX_ELEMENTS = 4_000;
 
     function bboxAreaKm2(bounds) {
         const height = 111.32 * Math.abs(bounds.north - bounds.south);
@@ -25,7 +24,7 @@
         return { south, west, north, east };
     }
 
-    const bboxLimits = { MAX_BBOX_AREA_KM2, MAX_ELEMENTS, bboxAreaKm2, parseBounds };
+    const bboxLimits = { MAX_BBOX_AREA_KM2, bboxAreaKm2, parseBounds };
 
     if (typeof module !== 'undefined' && module.exports) module.exports = bboxLimits;
     if (typeof window !== 'undefined') window.POTAMAP_BBOX_LIMITS = bboxLimits;

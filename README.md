@@ -1,131 +1,97 @@
-# POTA (Parks on the Air) Map
+# OSM POTA Map
 
-## Project Overview
+An interactive Leaflet map for Parks on the Air (POTA). The map shows POTA
+features from OpenStreetMap (OSM) through the configured Overpass server and
+adds a separate catalogue layer for active POTA parks that do not yet have an
+OSM POTA reference.
 
-This project provides an interactive web-based map for POTA (Parks on the Air) locations, designed for amateur radio enthusiasts. It allows users to explore and find Parks on the Air for their amateur radio operations.
+## Map layers and data precedence
 
-## Features
+- **OpenStreetMap:** OSM geometries and markers tagged with
+  `communication:amateur_radio:pota` are displayed in the regular marker layer.
+- **Unmapped POTA catalogue:** The server downloads the POTA CSV and compares
+  its park references with the complete OSM reference index. Only parks whose
+  references are absent from OSM are returned, using the coordinates in the
+  CSV. The map links to OSM so contributors can add the missing reference.
+- The catalogue uses its own Leaflet layer and amber cluster icon. OSM results
+  always take precedence, including when the matching OSM park is outside the
+  current map view.
 
-- Interactive map displaying POTA locations
-- Nearby markers grouped into clusters at lower zoom levels
-- Separate layer for parks in the POTA catalogue that are not linked to OSM
-- Utilizes OpenStreetMap data
-- User location feature
-- Mobile-responsive design
+The CSV is not written into the replicated Overpass database. The server loads
+it on startup and refreshes it nightly at 02:00 UTC. The OSM reference index is
+refreshed when needed, with a one-minute freshness window. If a refresh fails,
+the last good CSV remains available; the server fails closed when it cannot
+confirm OSM references, to avoid displaying duplicate parks.
 
-## Technology Stack
+## Query limits
 
-- HTML5
-- CSS3
-- JavaScript
-- Leaflet.js for map functionality
-- OpenStreetMap for map data
-- Docker for containerization
-- Nginx as the web server
+The map and `/api/pota/unmapped` endpoint enforce a maximum visible bounding
+box area of 50,000,000 km². Zoom in when the map reports that the area is too
+large. There is no feature-count cap; very dense views can take longer to
+download and render.
 
-## Building and Running with Docker
+## Run locally
 
-To build and run this application using Docker, follow these steps:
+Requirements: Node.js 22 or later.
 
-1. Ensure you have Docker installed on your system.
-
-2. Clone the repository:
-   ```
-   git clone https://github.com/your-username/OSM-POTA-Map.git
-   cd OSM-POTA-Map
-   ```
-
-3. Build the Docker image:
-   ```
-   docker build -t osm-pota-map .
-   ```
-
-4. Run the Docker container:
-   ```
-   docker run -d -p 8080:80 --name osm-pota-map-container osm-pota-map
-   ```
-
-   This command runs the container in detached mode (-d), maps port 8080 on your host to port 80 in the container (-p 8080:80), and names the container "osm-pota-map-container".
-
-5. Access the application by opening a web browser and navigating to `http://localhost:8080`.
-
-## Environment Variables
-
-The application uses the following optional environment variables:
-
-- `OVERPASS_URL`: The Overpass API interpreter endpoint. It defaults to
-  `https://overpass.ea7klk.es/api/interpreter`.
-- `POTA_CSV_URL`: POTA park catalogue CSV URL. It defaults to
-  `https://pota.app/all_parks_ext.csv`.
-- `POTA_CSV_REFRESH_MS`: CSV cache refresh period in milliseconds. Defaults to
-  24 hours as a freshness fallback.
-- `POTA_CSV_REFRESH_HOUR_UTC`: Hour of day in UTC for the scheduled CSV refresh.
-  Defaults to 02:00 UTC.
-- `POTA_OSM_REFERENCE_REFRESH_MS`: Refresh period for the complete set of POTA
-  references tagged in OSM. Defaults to one minute.
-- `MATOMO_URL`: The URL of your Matomo analytics instance.
-- `MATOMO_SITE_ID`: The site ID for your application in Matomo.
-
-To set these variables when running the Docker container, use the `-e` flag:
-
-```
-docker run -d -p 8080:80 -e MATOMO_URL="https://your-matomo-url.com/" -e MATOMO_SITE_ID="2" --name osm-pota-map-container osm-pota-map
+```sh
+npm ci
+npm start
 ```
 
-## Usage
+Open <http://localhost:3000>. To build and run the same Node.js application in
+a container:
 
-- Pan and zoom the map to explore POTA locations
-- Click a cluster to zoom in; click an individual marker to view its POTA site details
-- Use the layer control to show or hide OSM features and POTA catalogue
-  candidates independently
-- Use the locate control to find your current position on the map
+```sh
+docker build -t osm-pota-map .
+docker run --rm -p 3000:3000 osm-pota-map
+```
 
-## POTA catalogue layer
+## Configuration
 
-The map server downloads the POTA CSV into an in-memory catalogue and requests
-the complete set of `communication:amateur_radio:pota` references from the
-configured Overpass server. Its `/api/pota/unmapped` endpoint returns only CSV
-parks whose references are absent from OSM, filtered to the requested bounding
-box. The Leaflet catalogue layer displays those parks at their POTA-provided
-coordinates and includes a link for adding the reference to OpenStreetMap.
-Unmapped catalogue parks cluster independently from OSM markers and use a
-distinct amber cluster icon.
+The server accepts these environment variables:
 
-OSM geometries and markers remain on the OSM layer. The CSV catalogue is never
-inserted into the replicated Overpass database. The map server loads the CSV on
-startup and refreshes it every night at 02:00 UTC; the OSM reference index
-refreshes every minute when requested. The last good CSV catalogue remains
-available if a refresh fails. If the OSM reference index expires and cannot be
-refreshed, the endpoint returns an error instead of showing possible duplicates.
-Both map queries use Ham Radio Map's limits: the visible bounding box may cover
-up to 50,000,000 km², and each query may return up to 4,000 features. Zoom in to
-continue when either limit is exceeded; the catalogue endpoint enforces these
-limits server-side as well.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `OVERPASS_URL` | `https://overpass.ea7klk.es/api/interpreter` | Overpass endpoint used by the map and OSM reference index. |
+| `POTA_CSV_URL` | `https://pota.app/all_parks_ext.csv` | POTA park catalogue CSV. |
+| `POTA_CSV_REFRESH_MS` | 24 hours | CSV cache freshness fallback. The scheduled refresh runs at the configured UTC hour. |
+| `POTA_CSV_REFRESH_HOUR_UTC` | `2` | UTC hour for the nightly CSV refresh. |
+| `POTA_OSM_REFERENCE_REFRESH_MS` | 60,000 ms | OSM reference index freshness window. |
+| `MATOMO_ENABLED` | `false` | Enables Matomo tracking when set to `true`. |
+| `MATOMO_URL` | empty | Matomo base URL. |
+| `MATOMO_SITE_ID` | empty | Matomo site ID. |
+
+## Production build and deployment
+
+The production image is built and pushed by the GitHub Actions workflow in
+`.github/workflows/docker-build.yml`. Pushing a branch named
+`release/vX.Y.Z` builds and publishes a multi-architecture image to GHCR and
+creates the matching GitHub release.
+
+The deployment is managed by Fleet from `fleet/potamap/resources.yaml`. After a
+successful build, update the image there to the immutable GHCR digest and merge
+or push that manifest change to `main`. Fleet then rolls out the new image. The
+Deployment uses two replicas with `maxUnavailable: 0`, `maxSurge: 1`, readiness
+checks, and a ten-second minimum ready time so existing pods remain available
+while replacements become ready. Both replicas currently target the
+`spainip-k3s` node.
+
+## Development checks
+
+Run the test suite with:
+
+```sh
+npm test
+```
 
 ## Contributing
 
-Contributions to improve the map data are welcome. If you're a regular participant in the POTA program, consider contributing to OpenStreetMap to enhance the accuracy and completeness of the data.
+Contributions to improve the map data are welcome. See [how to add a POTA
+reference to OpenStreetMap](docs/adding-pota-reference-to-osm.md), including
+the worked example for Sant Llorenç del Munt i l'Obac Nature Park (ES-0142).
 
-See [how to add a POTA reference to OpenStreetMap](docs/adding-pota-reference-to-osm.md), including the worked example for Sant Llorenç del Munt i l'Obac Nature Park (ES-0142).
+## Credits
 
-## Author
-
-Volker Kerkhoff, EA7KLK
-Montequinto, Spain
-
-## License
-
-This project is open source. Please refer to the LICENSE file for more information.
-
-## Acknowledgments
-
-- OpenStreetMap and its community for providing the map data
-- Leaflet.js for the interactive mapping library
-
-## Contact
-
-For any queries or suggestions, please contact Volker Kerkhoff, EA7KLK.
-
----
-
-Note: The accuracy and completeness of the map data depend on volunteers maintaining the OpenStreetMap database.
+Created by Volker Kerkhoff, EA7KLK. Map data is provided by OpenStreetMap and
+the POTA park catalogue; mapping uses Leaflet.

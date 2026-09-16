@@ -3,7 +3,7 @@ const path = require('path');
 const app = express();
 const port = 3000;
 const { PotaCatalogueService } = require('./pota-catalogue');
-const { MAX_BBOX_AREA_KM2, MAX_ELEMENTS, bboxAreaKm2, parseBounds } = require('./bbox-limits');
+const { MAX_BBOX_AREA_KM2, bboxAreaKm2, parseBounds } = require('./bbox-limits');
 
 // Matomo configuration
 const MATOMO_ENABLED = process.env.MATOMO_ENABLED || 'false';
@@ -42,11 +42,6 @@ app.get('/api/pota/unmapped', async (req, res) => {
 
     try {
         const catalogue = await potaCatalogue.getUnmappedParks(bounds);
-        if (catalogue.features.length > MAX_ELEMENTS) {
-            return res.status(413).json({
-                error: `More than ${MAX_ELEMENTS.toLocaleString()} unmapped POTA parks are in this view. Zoom in to narrow the search.`
-            });
-        }
         res.set('Cache-Control', 'private, max-age=60');
         return res.json(catalogue);
     } catch (error) {

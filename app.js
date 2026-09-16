@@ -3,7 +3,7 @@ const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
-const { MAX_BBOX_AREA_KM2, MAX_ELEMENTS, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
+const { MAX_BBOX_AREA_KM2, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
 
 // OSM4Leaflet class implementation
 class OSM4Leaflet extends L.Layer {
@@ -99,36 +99,17 @@ class OSM4Leaflet extends L.Layer {
 
         this.clearErrorPopup();
         const results = await Promise.allSettled([
-            this.fetchPOTAData(this.buildOverpassQuery(extendedBounds, 'out count')),
+            this.fetchPOTAData(this.buildOverpassQuery(extendedBounds)),
             this.fetchCatalogueData(extendedBounds)
         ]);
         if (requestId !== this.loadRequestId) return;
 
-        const [osmCountResult, catalogueResult] = results;
+        const [osmResult, catalogueResult] = results;
         let osmReferences = new Set();
         let osmError = null;
-        if (osmCountResult.status === 'fulfilled' && osmCountResult.value && Array.isArray(osmCountResult.value.elements)) {
-            const countElement = osmCountResult.value.elements.find(element => element.type === 'count');
-            const countTags = countElement && countElement.tags;
-            const count = countTags && Number(countTags.total ?? (
-                Number(countTags.nodes || 0) + Number(countTags.ways || 0) + Number(countTags.relations || 0)
-            ));
-            if (!Number.isFinite(count)) {
-                osmError = 'The Overpass server returned an unreadable result count.';
-            } else if (count > MAX_ELEMENTS) {
-                this.baseLayer.clearLayers();
-                this.markerLayer.clearLayers();
-                osmError = `Overpass found more than ${MAX_ELEMENTS.toLocaleString()} POTA features in this view. Zoom in to narrow the search.`;
-            } else {
-                const osmData = await this.fetchPOTAData(this.buildOverpassQuery(extendedBounds));
-                if (requestId !== this.loadRequestId) return;
-                if (osmData && Array.isArray(osmData.elements)) {
-                    this.addData(osmData);
-                    osmReferences = collectPotaRefsFromResponse(osmData);
-                } else {
-                    osmError = 'OSM POTA features could not be loaded.';
-                }
-            }
+        if (osmResult.status === 'fulfilled' && osmResult.value && Array.isArray(osmResult.value.elements)) {
+            this.addData(osmResult.value);
+            osmReferences = collectPotaRefsFromResponse(osmResult.value);
         } else {
             osmError = 'OSM POTA features could not be loaded.';
         }
@@ -154,9 +135,9 @@ class OSM4Leaflet extends L.Layer {
         );
     }
 
-    buildOverpassQuery(bounds, output = 'out geom') {
+    buildOverpassQuery(bounds) {
         const { _southWest, _northEast } = bounds;
-        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});${output};`;
+        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out geom;`;
     }
 
     async fetchPOTAData(query) {
