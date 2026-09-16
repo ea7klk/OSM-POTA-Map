@@ -1,0 +1,193 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "name": "potamap",
+    "namespace": "potamap",
+    "annotations": {
+      "helm.sh/resource-policy": "keep"
+    }
+  },
+  "spec": {
+    "progressDeadlineSeconds": 600,
+    "replicas": 1,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app.kubernetes.io/name": "potamap"
+      }
+    },
+    "strategy": {
+      "type": "Recreate"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app.kubernetes.io/name": "potamap"
+        }
+      },
+      "spec": {
+        "automountServiceAccountToken": false,
+        "containers": [
+          {
+            "args": [
+              "node",
+              "server.js"
+            ],
+            "command": [
+              "docker-entrypoint.sh"
+            ],
+            "envFrom": [
+              {
+                "secretRef": {
+                  "name": "potamap-env"
+                }
+              }
+            ],
+            "image": "ghcr.io/ea7klk/osm-pota-map@sha256:fbb15b48df93562df9ed8821c1e58ef59615973d9b33694869ffe6c0e68f1c74",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "potamap",
+            "ports": [
+              {
+                "containerPort": 3000,
+                "name": "p3000-tcp",
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 3,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "tcpSocket": {
+                "port": 3000
+              },
+              "timeoutSeconds": 1
+            },
+            "resources": {
+              "requests": {
+                "cpu": "25m",
+                "memory": "64Mi"
+              }
+            },
+            "startupProbe": {
+              "failureThreshold": 180,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "tcpSocket": {
+                "port": 3000
+              },
+              "timeoutSeconds": 1
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/dev/shm",
+                "name": "shm"
+              }
+            ],
+            "workingDir": "/app",
+            "env": [
+              {
+                "name": "OVERPASS_URL",
+                "value": "https://overpass.ea7klk.es/api/interpreter"
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "imagePullSecrets": [
+          {
+            "name": "registry-credentials"
+          }
+        ],
+        "nodeSelector": {
+          "kubernetes.io/hostname": "spainip-k3s"
+        },
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "terminationGracePeriodSeconds": 120,
+        "volumes": [
+          {
+            "emptyDir": {
+              "medium": "Memory",
+              "sizeLimit": "67108864"
+            },
+            "name": "shm"
+          }
+        ]
+      }
+    }
+  }
+}
+---
+{
+  "apiVersion": "v1",
+  "kind": "Service",
+  "metadata": {
+    "labels": {},
+    "name": "potamap",
+    "namespace": "potamap",
+    "annotations": {
+      "helm.sh/resource-policy": "keep"
+    }
+  },
+  "spec": {
+    "clusterIP": "10.43.19.58",
+    "clusterIPs": [
+      "10.43.19.58"
+    ],
+    "internalTrafficPolicy": "Cluster",
+    "ipFamilies": [
+      "IPv4"
+    ],
+    "ipFamilyPolicy": "SingleStack",
+    "ports": [
+      {
+        "name": "p3000-tcp",
+        "port": 3000,
+        "protocol": "TCP",
+        "targetPort": 3000
+      }
+    ],
+    "selector": {
+      "app.kubernetes.io/name": "potamap"
+    },
+    "sessionAffinity": "None",
+    "type": "ClusterIP"
+  }
+}
+---
+{
+  "apiVersion": "traefik.io/v1alpha1",
+  "kind": "IngressRoute",
+  "metadata": {
+    "labels": {},
+    "name": "potamap-potamap",
+    "namespace": "potamap",
+    "annotations": {
+      "helm.sh/resource-policy": "keep"
+    }
+  },
+  "spec": {
+    "entryPoints": [
+      "websecure"
+    ],
+    "routes": [
+      {
+        "kind": "Rule",
+        "match": "Host(`potamap.ea7klk.es`)",
+        "services": [
+          {
+            "name": "potamap",
+            "port": 3000
+          }
+        ]
+      }
+    ],
+    "tls": {
+      "certResolver": "acmeresolver"
+    }
+  }
+}
