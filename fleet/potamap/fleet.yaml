@@ -1,0 +1,3 @@
+helm:
+  releaseName: osm-pota-map
+  takeOwnership: true
