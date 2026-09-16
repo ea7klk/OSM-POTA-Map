@@ -3,6 +3,7 @@ const path = require('path');
 const app = express();
 const port = 3000;
 const { PotaCatalogueService } = require('./pota-catalogue');
+const { MAX_BBOX_AREA_KM2, MAX_ELEMENTS, bboxAreaKm2, parseBounds } = require('./bbox-limits');
 
 // Matomo configuration
 const MATOMO_ENABLED = process.env.MATOMO_ENABLED || 'false';
@@ -19,17 +20,6 @@ const potaCatalogue = new PotaCatalogueService({
     referenceRefreshMs: process.env.POTA_OSM_REFERENCE_REFRESH_MS
 });
 
-function parseBounds(query) {
-    const values = ['south', 'west', 'north', 'east'].map(key => query[key]);
-    if (values.some(value => value === undefined || value === '')) return null;
-
-    const [south, west, north, east] = values.map(Number);
-    if (![south, west, north, east].every(Number.isFinite)) return null;
-    if (south < -90 || north > 90 || west < -180 || west > 180 || east < -180 || east > 180) return null;
-    if (south > north) return null;
-    return { south, west, north, east };
-}
-
 app.use(express.static(path.join(__dirname, '.')));
 
 app.get('/', (req, res) => {
@@ -43,9 +33,20 @@ app.get('/api/pota/unmapped', async (req, res) => {
             error: 'Provide a valid bounding box using south, west, north, and east coordinates.'
         });
     }
+    const area = bboxAreaKm2(bounds);
+    if (area > MAX_BBOX_AREA_KM2) {
+        return res.status(413).json({
+            error: `This bounding box covers about ${Math.round(area).toLocaleString()} km². Zoom in to ${MAX_BBOX_AREA_KM2.toLocaleString()} km² or less.`
+        });
+    }
 
     try {
         const catalogue = await potaCatalogue.getUnmappedParks(bounds);
+        if (catalogue.features.length > MAX_ELEMENTS) {
+            return res.status(413).json({
+                error: `More than ${MAX_ELEMENTS.toLocaleString()} unmapped POTA parks are in this view. Zoom in to narrow the search.`
+            });
+        }
         res.set('Cache-Control', 'private, max-age=60');
         return res.json(catalogue);
     } catch (error) {

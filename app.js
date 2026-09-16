@@ -3,6 +3,7 @@ const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
+const { MAX_BBOX_AREA_KM2, MAX_ELEMENTS, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
 
 // OSM4Leaflet class implementation
 class OSM4Leaflet extends L.Layer {
@@ -78,29 +79,69 @@ class OSM4Leaflet extends L.Layer {
     async loadData() {
         const bounds = this.map.getBounds();
         const extendedBounds = this.extendBounds(bounds);
-        const query = this.buildOverpassQuery(extendedBounds);
         const requestId = ++this.loadRequestId;
+
+        const { _southWest, _northEast } = extendedBounds;
+        const bbox = {
+            south: _southWest.lat,
+            west: _southWest.lng,
+            north: _northEast.lat,
+            east: _northEast.lng
+        };
+        const area = bboxAreaKm2(bbox);
+        if (area > MAX_BBOX_AREA_KM2) {
+            this.baseLayer.clearLayers();
+            this.markerLayer.clearLayers();
+            this.catalogueLayer.clearLayers();
+            this.showErrorPopup(`This map view covers about ${Math.round(area).toLocaleString()} km². Zoom in to ${MAX_BBOX_AREA_KM2.toLocaleString()} km² or less.`);
+            return;
+        }
+
+        this.clearErrorPopup();
         const results = await Promise.allSettled([
-            this.fetchPOTAData(query),
+            this.fetchPOTAData(this.buildOverpassQuery(extendedBounds, 'out count')),
             this.fetchCatalogueData(extendedBounds)
         ]);
         if (requestId !== this.loadRequestId) return;
 
-        const [osmResult, catalogueResult] = results;
+        const [osmCountResult, catalogueResult] = results;
         let osmReferences = new Set();
-        if (osmResult.status === 'fulfilled' && osmResult.value && Array.isArray(osmResult.value.elements)) {
-            this.addData(osmResult.value);
-            osmReferences = collectPotaRefsFromResponse(osmResult.value);
-            this.clearErrorPopup();
+        let osmError = null;
+        if (osmCountResult.status === 'fulfilled' && osmCountResult.value && Array.isArray(osmCountResult.value.elements)) {
+            const countElement = osmCountResult.value.elements.find(element => element.type === 'count');
+            const countTags = countElement && countElement.tags;
+            const count = countTags && Number(countTags.total ?? (
+                Number(countTags.nodes || 0) + Number(countTags.ways || 0) + Number(countTags.relations || 0)
+            ));
+            if (!Number.isFinite(count)) {
+                osmError = 'The Overpass server returned an unreadable result count.';
+            } else if (count > MAX_ELEMENTS) {
+                this.baseLayer.clearLayers();
+                this.markerLayer.clearLayers();
+                osmError = `Overpass found more than ${MAX_ELEMENTS.toLocaleString()} POTA features in this view. Zoom in to narrow the search.`;
+            } else {
+                const osmData = await this.fetchPOTAData(this.buildOverpassQuery(extendedBounds));
+                if (requestId !== this.loadRequestId) return;
+                if (osmData && Array.isArray(osmData.elements)) {
+                    this.addData(osmData);
+                    osmReferences = collectPotaRefsFromResponse(osmData);
+                } else {
+                    osmError = 'OSM POTA features could not be loaded.';
+                }
+            }
         } else {
-            this.showErrorPopup();
+            osmError = 'OSM POTA features could not be loaded.';
         }
 
+        if (osmError) this.showErrorPopup(osmError);
         if (catalogueResult.status === 'fulfilled' && catalogueResult.value) {
             this.addCatalogueData(catalogueResult.value, osmReferences);
         } else {
             console.error('Error fetching POTA catalogue data:', catalogueResult.reason);
             this.catalogueLayer.clearLayers();
+            if (catalogueResult.reason && catalogueResult.reason.status === 413) {
+                this.showErrorPopup(catalogueResult.reason.message);
+            }
         }
     }
 
@@ -113,9 +154,9 @@ class OSM4Leaflet extends L.Layer {
         );
     }
 
-    buildOverpassQuery(bounds) {
+    buildOverpassQuery(bounds, output = 'out geom') {
         const { _southWest, _northEast } = bounds;
-        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out geom;`;
+        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});${output};`;
     }
 
     async fetchPOTAData(query) {
@@ -154,12 +195,17 @@ class OSM4Leaflet extends L.Layer {
             headers: { Accept: 'application/geo+json, application/json' },
             cache: 'no-store'
         });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+            const details = await response.json().catch(() => ({}));
+            const error = new Error(details.error || `HTTP error! status: ${response.status}`);
+            error.status = response.status;
+            throw error;
+        }
         return response.json();
     }
 
-    showErrorPopup() {
-        const popupContent = '<div style="text-align: center;">The selected area is too large. Please zoom in.</div>';
+    showErrorPopup(message = 'The selected area is too large. Please zoom in.') {
+        const popupContent = `<div style="text-align: center;">${escapeHtml(message)}</div>`;
         if (this.errorPopup) {
             this.errorPopup.setContent(popupContent);
         } else {

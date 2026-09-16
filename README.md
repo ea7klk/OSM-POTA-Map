@@ -97,6 +97,10 @@ startup and refreshes it every night at 02:00 UTC; the OSM reference index
 refreshes every minute when requested. The last good CSV catalogue remains
 available if a refresh fails. If the OSM reference index expires and cannot be
 refreshed, the endpoint returns an error instead of showing possible duplicates.
+Both map queries use Ham Radio Map's limits: the visible bounding box may cover
+up to 50,000,000 km², and each query may return up to 4,000 features. Zoom in to
+continue when either limit is exceeded; the catalogue endpoint enforces these
+limits server-side as well.
 
 ## Contributing
 
