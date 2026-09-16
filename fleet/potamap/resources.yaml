@@ -37,13 +37,6 @@
             "command": [
               "docker-entrypoint.sh"
             ],
-            "envFrom": [
-              {
-                "secretRef": {
-                  "name": "potamap-env"
-                }
-              }
-            ],
             "image": "ghcr.io/ea7klk/osm-pota-map@sha256:fbb15b48df93562df9ed8821c1e58ef59615973d9b33694869ffe6c0e68f1c74",
             "imagePullPolicy": "IfNotPresent",
             "name": "potamap",
@@ -88,6 +81,18 @@
             ],
             "workingDir": "/app",
             "env": [
+              {
+                "name": "MATOMO_ENABLED",
+                "value": "true"
+              },
+              {
+                "name": "MATOMO_URL",
+                "value": "https://matomo.conxtor.com/"
+              },
+              {
+                "name": "MATOMO_SITE_ID",
+                "value": "3"
+              },
               {
                 "name": "OVERPASS_URL",
                 "value": "https://overpass.ea7klk.es/api/interpreter"
