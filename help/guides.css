@@ -144,9 +144,10 @@ a:focus-visible { outline: 3px solid #edb949; outline-offset: 3px; border-radius
 }
 
 .guide-content figure { margin: 1.6rem 0 0.5rem; }
+.guide-content p > img,
 .guide-content figure img {
     display: block;
-    width: auto;
+    width: 100%;
     max-width: 100%;
     height: auto;
     border: 1px solid #d9e1db;
@@ -154,6 +155,8 @@ a:focus-visible { outline: 3px solid #edb949; outline-offset: 3px; border-radius
     box-shadow: 0 10px 28px rgb(26 73 42 / 12%);
     background: #f7f8f7;
 }
+
+.guide-content p > img { margin: 1.6rem 0 0.5rem; }
 
 .guide-content blockquote {
     margin: 1.4rem 0;
@@ -205,4 +208,6 @@ a:focus-visible { outline: 3px solid #edb949; outline-offset: 3px; border-radius
     .page-header { min-height: 3.7rem; padding-inline: 0.75rem; font-size: 0.92rem; }
     .guide-content { border-radius: 0.75rem; padding: 1.15rem; }
     .guide-content ol > li { padding-left: 2.85rem; }
+    .guide-content p > img,
+    .guide-content figure img { border-radius: 0.55rem; }
 }
