@@ -10,7 +10,8 @@
   },
   "spec": {
     "progressDeadlineSeconds": 600,
-    "replicas": 1,
+    "replicas": 2,
+    "minReadySeconds": 10,
     "revisionHistoryLimit": 10,
     "selector": {
       "matchLabels": {
@@ -18,7 +19,11 @@
       }
     },
     "strategy": {
-      "type": "Recreate"
+      "type": "RollingUpdate",
+      "rollingUpdate": {
+        "maxUnavailable": 0,
+        "maxSurge": 1
+      }
     },
     "template": {
       "metadata": {
@@ -51,8 +56,10 @@
               "failureThreshold": 3,
               "periodSeconds": 10,
               "successThreshold": 1,
-              "tcpSocket": {
-                "port": 3000
+              "httpGet": {
+                "path": "/",
+                "port": 3000,
+                "scheme": "HTTP"
               },
               "timeoutSeconds": 1
             },
