@@ -1,0 +1,87 @@
+{
+  "apiVersion": "storage.k8s.io/v1",
+  "kind": "StorageClass",
+  "metadata": {
+    "name": "retained-local",
+    "annotations": {
+      "helm.sh/resource-policy": "keep"
+    }
+  },
+  "provisioner": "kubernetes.io/no-provisioner",
+  "reclaimPolicy": "Retain",
+  "volumeBindingMode": "WaitForFirstConsumer"
+}
+---
+{
+  "apiVersion": "v1",
+  "kind": "PersistentVolume",
+  "metadata": {
+    "name": "traefik-acme",
+    "annotations": {
+      "helm.sh/resource-policy": "keep"
+    }
+  },
+  "spec": {
+    "accessModes": [
+      "ReadWriteOnce"
+    ],
+    "capacity": {
+      "storage": "1Gi"
+    },
+    "claimRef": {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "name": "acme",
+      "namespace": "traefik",
+      "uid": "be582828-e8ee-4ac0-bae2-28745339c4dd"
+    },
+    "local": {
+      "path": "/opt/k3s-data/traefik-acme"
+    },
+    "nodeAffinity": {
+      "required": {
+        "nodeSelectorTerms": [
+          {
+            "matchExpressions": [
+              {
+                "key": "kubernetes.io/hostname",
+                "operator": "In",
+                "values": [
+                  "spainip-k3s"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "persistentVolumeReclaimPolicy": "Retain",
+    "storageClassName": "retained-local",
+    "volumeMode": "Filesystem"
+  }
+}
+---
+{
+  "apiVersion": "v1",
+  "kind": "PersistentVolumeClaim",
+  "metadata": {
+    "name": "acme",
+    "namespace": "traefik",
+    "annotations": {
+      "helm.sh/resource-policy": "keep"
+    }
+  },
+  "spec": {
+    "accessModes": [
+      "ReadWriteOnce"
+    ],
+    "resources": {
+      "requests": {
+        "storage": "1Gi"
+      }
+    },
+    "storageClassName": "retained-local",
+    "volumeMode": "Filesystem",
+    "volumeName": "traefik-acme"
+  }
+}

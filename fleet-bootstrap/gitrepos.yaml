@@ -1,0 +1,34 @@
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: infra
+  namespace: fleet-local
+spec:
+  repo: https://github.com/spainip/infra.git
+  branch: main
+  clientSecretName: github-auth
+  paths:
+  - fleet
+  keepResources: true
+  correctDrift:
+    enabled: true
+
+---
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: osm-pota-map
+  namespace: ea7klk
+  labels:
+    fleet.spainip.es/workspace: ea7klk
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  repo: https://github.com/ea7klk/OSM-POTA-Map.git
+  branch: main
+  paths:
+    - fleet/potamap
+    - fleet/storage
+  keepResources: true
+  correctDrift:
+    enabled: true
