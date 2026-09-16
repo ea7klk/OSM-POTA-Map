@@ -10,7 +10,11 @@ class OSM4Leaflet extends L.Layer {
         super(options);
         this.options = L.Util.extend({}, this.options, options);
         this.baseLayer = null;
-        this.markerLayer = L.layerGroup();
+        this.markerLayer = L.markerClusterGroup({
+            chunkedLoading: true,
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true
+        });
         this.errorPopup = null;
         this.loadDataTimeout = null;
     }
@@ -142,6 +146,7 @@ class OSM4Leaflet extends L.Layer {
         
         const currentZoom = this.map.getZoom();
         const potaElements = new Map();
+        const markers = [];
 
         geojson.features.forEach(feature => {
             if (feature.geometry) {
@@ -223,7 +228,6 @@ class OSM4Leaflet extends L.Layer {
                     })
                 });
             }
-            marker.addTo(this.markerLayer);
             marker.bindPopup(popupContent);
 
             // Add event listeners to the marker
@@ -235,7 +239,9 @@ class OSM4Leaflet extends L.Layer {
                     marker.openPopup();
                 }
             });
+            markers.push(marker);
         });
+        this.markerLayer.addLayers(markers);
 
         if (this.options.afterParse) {
             this.options.afterParse(geojson);

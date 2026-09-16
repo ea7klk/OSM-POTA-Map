@@ -7,6 +7,7 @@ This project provides an interactive web-based map for POTA (Parks on the Air) l
 ## Features
 
 - Interactive map displaying POTA locations
+- Nearby markers grouped into clusters at lower zoom levels
 - Utilizes OpenStreetMap data
 - User location feature
 - Mobile-responsive design
@@ -65,7 +66,7 @@ docker run -d -p 8080:80 -e MATOMO_URL="https://your-matomo-url.com/" -e MATOMO_
 ## Usage
 
 - Pan and zoom the map to explore POTA locations
-- Click on markers to view details about specific POTA sites
+- Click a cluster to zoom in; click an individual marker to view its POTA site details
 - Use the locate control to find your current position on the map
 
 ## Contributing
