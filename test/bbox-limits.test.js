@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
 const {
     MAX_BBOX_AREA_KM2,
     MAX_ELEMENTS,
@@ -12,6 +14,17 @@ test('uses the same bbox area and feature limits as Ham Radio Map', () => {
     assert.equal(MAX_ELEMENTS, 4_000);
     assert.ok(bboxAreaKm2({ south: -90, west: -180, north: 90, east: 180 }) > MAX_BBOX_AREA_KM2);
     assert.ok(bboxAreaKm2({ south: 35, west: -10, north: 45, east: 5 }) < MAX_BBOX_AREA_KM2);
+});
+
+test('keeps browser globals isolated so app.js can import the shared limits', () => {
+    const source = fs.readFileSync(require.resolve('../bbox-limits'), 'utf8');
+    const context = vm.createContext({ window: {} });
+
+    vm.runInContext(source, context);
+    assert.doesNotThrow(() => vm.runInContext(
+        'const { MAX_BBOX_AREA_KM2, MAX_ELEMENTS, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;',
+        context
+    ));
 });
 
 test('calculates bbox area using latitude-adjusted longitude width', () => {
