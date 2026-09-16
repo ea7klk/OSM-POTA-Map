@@ -248,16 +248,15 @@ class OSM4Leaflet extends L.Layer {
             const safeName = escapeHtml(properties.name || reference);
             const safeReference = escapeHtml(reference);
             const potaUrl = `https://pota.app/#/park/${encodeURIComponent(reference)}`;
-            const editUrl = new URL('https://www.openstreetmap.org/edit');
-            editUrl.searchParams.set('editor', 'id');
-            editUrl.searchParams.set('lat', latitude);
-            editUrl.searchParams.set('lon', longitude);
-            editUrl.searchParams.set('zoom', '16');
+            const guideUrl = new URL('/help/index.html', window.location.origin);
+            guideUrl.searchParams.set('lat', latitude);
+            guideUrl.searchParams.set('lon', longitude);
+            guideUrl.searchParams.set('zoom', '16');
             const popupContent = `<div class="pota-catalogue-popup"><b>${safeName}</b><br>` +
                 `POTA ID: <a href="${potaUrl}" target="_blank" rel="noopener noreferrer">${safeReference}</a>` +
                 '<br>This POTA park is not yet linked to an OpenStreetMap feature.' +
                 '<br>The marker position comes from the POTA catalogue and may be approximate.' +
-                `<br><a href="${editUrl.href}" target="_blank" rel="noopener noreferrer">Help map it in OpenStreetMap</a>` +
+                `<br><a href="${guideUrl.href}" target="_blank" rel="noopener noreferrer">Help map it in OpenStreetMap</a>` +
                 `<br>Add <code>communication:amateur_radio:pota=${safeReference}</code> to the park feature.</div>`;
             marker.bindPopup(popupContent);
             marker.addTo(this.catalogueLayer);

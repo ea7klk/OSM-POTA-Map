@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Ajouter une référence POTA à OpenStreetMap">
+  <title>Ajouter une référence POTA à OpenStreetMap · POTA / OpenStreetMap</title>
+  <link rel="stylesheet" href="/help/guides.css">
+  <script src="/help/guides.js" defer></script>
+</head>
+<body class="guide-page guide-language">
+  <header class="page-header">
+    <a class="brand" href="/">EA7KLK POTA Map</a>
+    <a class="header-link" href="/help/index.html">All guide languages</a>
+  </header>
+  <main class="page-shell">
+    <div class="eyebrow">Parks on the Air · OpenStreetMap</div>
+    <a class="editor-link" data-open-editor href="https://www.openstreetmap.org/edit?editor=id&locale=fr" target="_blank" rel="noopener noreferrer" hidden>Ouvrir iD près de ce site</a>
+
+    <article class="guide-content">
+<h1>Ajouter une référence POTA à OpenStreetMap</h1>
+<p>Ce guide explique comment associer un objet OpenStreetMap (OSM) existant représentant un espace protégé à sa référence Parks on the Air (POTA).</p>
+<h2>Exemple de ce guide</h2>
+<p><strong>Parc naturel régional de Camargue</strong> — identifiant POTA <strong>FR-2497</strong>. Vérifiez le site sur la <a href="https://pota.app/#/park/FR-2497" target="_blank" rel="noopener noreferrer">fiche officielle POTA</a> et la <a href="https://www.openstreetmap.org/relation/5393067" target="_blank" rel="noopener noreferrer">relation OSM</a>.</p>
+<h2>Avant de commencer</h2>
+<p>Un compte OpenStreetMap actif est nécessaire pour envoyer des modifications. Si vous n’en avez pas, <a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">créez d’abord un compte OSM</a>, puis connectez-vous. Ce guide utilise l’éditeur iD dans le navigateur.</p>
+<h2>Étapes</h2>
+<ol>
+<li><strong>Vérifiez le site.</strong> Ouvrez la <a href="https://www.openstreetmap.org/relation/5393067" target="_blank" rel="noopener noreferrer">relation du Parc naturel régional de Camargue dans OSM</a> et vérifiez le nom, l’étendue et les tags existants de l’objet représentant l’ensemble de la zone protégée. Une zone protégée peut être cartographiée sous forme de relation multipolygone ou de chemin fermé.
+</li>
+<li><strong>Sélectionnez l’objet complet.</strong> Dans iD, zoomez et sélectionnez la zone du parc. Si vous avez sélectionné un chemin membre, ouvrez la relation représentant l’espace protégé. N’ajoutez pas le tag à chacun des chemins de limite.
+</li>
+<li><strong>Ajoutez un seul tag.</strong> Dans le panneau de l’objet, ouvrez <strong>Tous les tags</strong> (le libellé peut légèrement varier selon la version d’iD) et ajoutez exactement :
+<div class="tag-example"><code>communication:amateur_radio:pota=FR-2497</code></div>
+<p>Ne modifiez ni les tags existants ni la géométrie. Ne créez pas de nouveau point ou contour pour le code POTA. Si un tag POTA existe déjà ou si l’objet n’est pas clairement identifié, arrêtez-vous et demandez conseil à la communauté OSM locale.</p>
+<p><img src="../docs/images/05-fr-select-park.png" alt="Vue réelle de l’éditeur Rapid d’OSM avec le Parc naturel régional de Camargue sélectionné et le tag POTA FR-2497 visible" loading="lazy"></p>
+</li>
+<li><strong>Enregistrez le brouillon et relisez-le.</strong> Cliquez sur <strong>Enregistrer</strong> pour ouvrir le panneau d’envoi. Lisez la liste complète des changements en attente et vérifiez qu’elle ne contient que le tag POTA prévu sur le bon objet. Saisissez un commentaire descriptif, par exemple : <code>Ajout de la référence POTA FR-2497 au Parc naturel régional de Camargue</code>.
+</li>
+<li><strong>Confirmez l’envoi final.</strong> Avant l’envoi, vérifiez que l’objet sélectionné représente tout le site protégé, que la clé et la valeur sont exactement <code>communication:amateur_radio:pota=FR-2497</code> et qu’aucune géométrie ni aucun autre tag n’a été modifié. Lisez les avertissements éventuels. Si quelque chose est inattendu, annulez et corrigez le brouillon. Lorsque tout est correct, cliquez sur <strong>Envoyer</strong> pour publier la modification dans OSM. Cet envoi constitue la confirmation publique définitive.
+</li>
+<li><strong>Vérifiez la modification publiée.</strong> Quand iD confirme la réussite de l’envoi, rouvrez l’objet dans OSM et vérifiez la présence du tag. En cas d’échec, suivez le message affiché et ne réessayez qu’après avoir relu les changements. La carte POTA peut mettre un peu de temps à s’actualiser.
+</li>
+</ol>
+<h2>Liens</h2>
+<ul>
+<li><a href="https://pota.app/#/park/FR-2497" target="_blank" rel="noopener noreferrer">Fiche officielle POTA FR-2497</a>
+</li>
+<li><a href="https://www.openstreetmap.org/relation/5393067" target="_blank" rel="noopener noreferrer">Relation OpenStreetMap 5393067</a>
+</li>
+<li><a href="https://www.openstreetmap.org/changeset/189121860" target="_blank" rel="noopener noreferrer">Confirmation publique du changeset</a>
+</li>
+<li><a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">Créer un compte OpenStreetMap</a>
+</li>
+<li><a href="https://wiki.openstreetmap.org/wiki/Key:communication:amateur_radio" target="_blank" rel="noopener noreferrer">Wiki OpenStreetMap : <code>communication:amateur_radio</code></a>
+</li>
+</ul>
+    </article>
+    <p class="page-footer"><a href="/">Return to the POTA map</a></p>
+  </main>
+</body>
+</html>

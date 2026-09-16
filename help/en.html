@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Add a POTA reference to OpenStreetMap">
+  <title>Add a POTA reference to OpenStreetMap · POTA / OpenStreetMap</title>
+  <link rel="stylesheet" href="/help/guides.css">
+  <script src="/help/guides.js" defer></script>
+</head>
+<body class="guide-page guide-language">
+  <header class="page-header">
+    <a class="brand" href="/">EA7KLK POTA Map</a>
+    <a class="header-link" href="/help/index.html">All guide languages</a>
+  </header>
+  <main class="page-shell">
+    <div class="eyebrow">Parks on the Air · OpenStreetMap</div>
+    <a class="editor-link" data-open-editor href="https://www.openstreetmap.org/edit?editor=id&locale=en" target="_blank" rel="noopener noreferrer" hidden>Open iD near this park</a>
+
+    <article class="guide-content">
+<h1>Add a POTA reference to OpenStreetMap</h1>
+<p>This guide explains how to link an existing OpenStreetMap (OSM) park feature to its Parks on the Air (POTA) reference.</p>
+<h2>Example in this guide</h2>
+<p><strong>Tamar Valley National Landscape</strong> — POTA ID <strong>GB-0150</strong>. Confirm the park using the <a href="https://pota.app/#/park/GB-0150" target="_blank" rel="noopener noreferrer">official POTA listing</a> and the <a href="https://www.openstreetmap.org/relation/10773241" target="_blank" rel="noopener noreferrer">OSM relation</a>.</p>
+<h2>Before you start</h2>
+<p>You need an active OpenStreetMap account to upload changes. If you do not have one, <a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">register for an OSM account first</a>, then sign in. This guide uses the browser-based iD editor.</p>
+<h2>Steps</h2>
+<ol>
+<li><strong>Confirm the park.</strong> Open the <a href="https://www.openstreetmap.org/relation/10773241" target="_blank" rel="noopener noreferrer">Tamar Valley National Landscape relation in OSM</a> and check the name, extent, and existing tags of the feature that represents the whole protected site. A protected area may be mapped as a multipolygon relation or a closed way.
+</li>
+<li><strong>Select the whole feature.</strong> In iD, zoom in and select the park area. If you selected a member way, open the relation representing the protected site. Do not add the tag to every boundary member.
+</li>
+<li><strong>Add one tag.</strong> In the feature panel, open <strong>All tags</strong> (the wording may vary slightly by iD version) and add exactly:
+<div class="tag-example"><code>communication:amateur_radio:pota=GB-0150</code></div>
+<p>Leave existing tags and geometry unchanged. Do not create a new point or boundary for the POTA code. If a POTA tag already exists or the feature is unclear, stop and ask the local OSM community for advice.</p>
+<p><img src="../docs/images/04-en-select-park.png" alt="Real Rapid OSM editor view with Tamar Valley National Landscape selected and the GB-0150 POTA tag visible" loading="lazy"></p>
+</li>
+<li><strong>Save the draft and review it.</strong> Click <strong>Save</strong> to open the upload panel. Read the complete list of pending changes and check that it contains only the intended POTA tag on the correct park feature. Enter a descriptive changeset comment, for example: <code>Add POTA reference GB-0150 to Tamar Valley National Landscape</code>.
+</li>
+<li><strong>Make the final confirmation.</strong> Before uploading, confirm the selected feature is the whole protected site, the key and value are exactly <code>communication:amateur_radio:pota=GB-0150</code>, and no geometry or unrelated tags changed. Read any warnings. If anything is unexpected, cancel and correct the draft. When everything is correct, click <strong>Upload</strong> to publish the edit to OSM. Uploading is the final public confirmation.
+</li>
+<li><strong>Verify the published edit.</strong> After iD reports a successful upload, open the feature in OSM and confirm the tag is present. If the upload fails, follow the displayed error and retry only after reviewing the changes again. The POTA map may take a little time to refresh.
+</li>
+</ol>
+<h2>Links</h2>
+<ul>
+<li><a href="https://pota.app/#/park/GB-0150" target="_blank" rel="noopener noreferrer">Official POTA listing GB-0150</a>
+</li>
+<li><a href="https://www.openstreetmap.org/relation/10773241" target="_blank" rel="noopener noreferrer">OpenStreetMap relation 10773241</a>
+</li>
+<li><a href="https://www.openstreetmap.org/changeset/189121853" target="_blank" rel="noopener noreferrer">Public changeset confirmation</a>
+</li>
+<li><a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">Create an OpenStreetMap account</a>
+</li>
+<li><a href="https://wiki.openstreetmap.org/wiki/Key:communication:amateur_radio" target="_blank" rel="noopener noreferrer">OpenStreetMap Wiki: <code>communication:amateur_radio</code></a>
+</li>
+</ul>
+    </article>
+    <p class="page-footer"><a href="/">Return to the POTA map</a></p>
+  </main>
+</body>
+</html>

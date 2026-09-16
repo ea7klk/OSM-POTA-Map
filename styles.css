@@ -98,7 +98,7 @@ footer {
     hyphens: auto;
     box-sizing: border-box;
     width: 100%;
-    height: 3em; /* Approximately 1.5 lines high */
+    min-height: 3em;
     line-height: 1.5em;
     display: flex;
     align-items: center;
@@ -107,16 +107,13 @@ footer {
 
 footer p {
     margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    padding: 0 0.5rem;
+    line-height: 1.5;
 }
 
 @media screen and (max-width: 768px) {
     footer {
         font-size: 0.7rem;
-        height: 2.6em; /* Adjust for smaller font size */
+        min-height: 2.6em;
     }
 }

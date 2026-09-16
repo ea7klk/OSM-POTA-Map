@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Eine POTA-Referenz zu OpenStreetMap hinzufügen">
+  <title>Eine POTA-Referenz zu OpenStreetMap hinzufügen · POTA / OpenStreetMap</title>
+  <link rel="stylesheet" href="/help/guides.css">
+  <script src="/help/guides.js" defer></script>
+</head>
+<body class="guide-page guide-language">
+  <header class="page-header">
+    <a class="brand" href="/">EA7KLK POTA Map</a>
+    <a class="header-link" href="/help/index.html">All guide languages</a>
+  </header>
+  <main class="page-shell">
+    <div class="eyebrow">Parks on the Air · OpenStreetMap</div>
+    <a class="editor-link" data-open-editor href="https://www.openstreetmap.org/edit?editor=id&locale=de" target="_blank" rel="noopener noreferrer" hidden>iD in der Nähe dieses Parks öffnen</a>
+
+    <article class="guide-content">
+<h1>Eine POTA-Referenz zu OpenStreetMap hinzufügen</h1>
+<p>Diese Anleitung zeigt, wie ein vorhandenes OpenStreetMap-Objekt (OSM) eines Schutzgebiets mit seiner Parks-on-the-Air-Referenz (POTA) verknüpft wird.</p>
+<h2>Beispiel dieser Anleitung</h2>
+<p><strong>Nationalpark Harz</strong> — POTA-ID <strong>DE-0069</strong>. Prüfe das Gebiet in der <a href="https://pota.app/#/park/DE-0069" target="_blank" rel="noopener noreferrer">offiziellen POTA-Parkseite</a>.</p>
+<h2>Vor dem Start</h2>
+<p>Zum Hochladen von Änderungen benötigst du ein aktives OpenStreetMap-Konto. Falls du noch keines hast, <a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">registriere zuerst ein OSM-Konto</a> und melde dich anschließend an. Diese Anleitung verwendet den browserbasierten iD-Editor.</p>
+<h2>Schritte</h2>
+<ol>
+<li><strong>Gebiet prüfen.</strong> Suche den Nationalpark Harz in OSM und prüfe Name, Ausdehnung und vorhandene Tags des Objekts, das das gesamte Schutzgebiet darstellt. Ein Schutzgebiet kann als Multipolygon-Relation oder als geschlossener Weg erfasst sein.
+</li>
+<li><strong>Das Gesamtobjekt auswählen.</strong> Zoome im iD-Editor heran und wähle die Fläche des Parks aus. Falls du einen Mitgliedsweg ausgewählt hast, öffne die Relation, die das Schutzgebiet darstellt. Füge den Tag nicht allen Grenzwegen hinzu.
+</li>
+<li><strong>Einen Tag hinzufügen.</strong> Öffne im Objektbereich <strong>Alle Tags</strong> (die Bezeichnung kann je nach iD-Version leicht abweichen) und ergänze genau:
+<div class="tag-example"><code>communication:amateur_radio:pota=DE-0069</code></div>
+<p>Ändere keine vorhandenen Tags und keine Geometrie. Lege keinen neuen Punkt oder Umriss für den POTA-Code an. Gibt es bereits einen POTA-Tag oder ist das Objekt nicht eindeutig, halte an und frage die lokale OSM-Community.</p>
+<p><img src="../docs/images/02-de-select-park.png" alt="Reale Ansicht des Rapid-OSM-Editors mit ausgewähltem Nationalpark Harz und sichtbarem POTA-Tag DE-0069" loading="lazy"></p>
+</li>
+<li><strong>Entwurf speichern und prüfen.</strong> Klicke auf <strong>Speichern</strong>, um den Upload-Bereich zu öffnen. Lies die vollständige Liste der ausstehenden Änderungen und prüfe, ob sie nur den vorgesehenen POTA-Tag am richtigen Schutzgebiet enthält. Gib einen aussagekräftigen Änderungssatz-Kommentar ein, zum Beispiel: <code>POTA-Referenz DE-0069 zum Nationalpark Harz hinzufügen</code>.
+</li>
+<li><strong>Abschließend bestätigen.</strong> Prüfe vor dem Upload, ob das ausgewählte Objekt das gesamte Schutzgebiet darstellt, Schlüssel und Wert genau <code>communication:amateur_radio:pota=DE-0069</code> lauten und weder Geometrie noch andere Tags geändert wurden. Lies alle Warnhinweise. Falls etwas unerwartet ist, brich ab und korrigiere den Entwurf. Wenn alles stimmt, klicke auf <strong>Hochladen</strong>, um die Änderung öffentlich in OSM zu veröffentlichen. Das Hochladen ist die endgültige öffentliche Bestätigung.
+</li>
+<li><strong>Veröffentlichte Änderung prüfen.</strong> Sobald iD den erfolgreichen Upload meldet, öffne das Objekt in OSM erneut und kontrolliere den Tag. Bei einem Fehler folge der angezeigten Meldung und wiederhole den Upload erst nach erneuter Prüfung. Die POTA-Karte wird eventuell erst später aktualisiert.
+</li>
+</ol>
+<h2>Links</h2>
+<ul>
+<li><a href="https://pota.app/#/park/DE-0069" target="_blank" rel="noopener noreferrer">Offizielle POTA-Parkseite DE-0069</a>
+</li>
+<li><a href="https://www.openstreetmap.org/relation/90584" target="_blank" rel="noopener noreferrer">Schutzgebiet in OpenStreetMap</a>
+</li>
+<li><a href="https://www.openstreetmap.org/changeset/189121822" target="_blank" rel="noopener noreferrer">Öffentliche Bestätigung des Changesets</a>
+</li>
+<li><a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">OpenStreetMap-Konto erstellen</a>
+</li>
+<li><a href="https://wiki.openstreetmap.org/wiki/Key:communication:amateur_radio" target="_blank" rel="noopener noreferrer">OpenStreetMap-Wiki: <code>communication:amateur_radio</code></a>
+</li>
+</ul>
+    </article>
+    <p class="page-footer"><a href="/">Return to the POTA map</a></p>
+  </main>
+</body>
+</html>

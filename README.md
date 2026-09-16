@@ -87,11 +87,21 @@ Run the test suite with:
 npm test
 ```
 
+The multilingual OSM/POTA guides are maintained as Markdown in `docs/` and
+rendered as static pages in `help/`. After editing a guide, regenerate the web
+pages with:
+
+```sh
+npm run build:guides
+```
+
+The guide renderer uses the Node.js runtime already present in the app.
+
 ## Contributing
 
-Contributions to improve the map data are welcome. See [how to add a POTA
-reference to OpenStreetMap](docs/adding-pota-reference-to-osm.md), including
-the worked example for Sant Llorenç del Munt i l'Obac Nature Park (ES-0142).
+Contributions to improve the map data are welcome. See the [multilingual guide
+to adding a POTA reference to OpenStreetMap](docs/adding-pota-reference-to-osm.md)
+and its Spanish, English, German, Italian, and French examples.
 
 ## Credits
 

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Añadir una referencia POTA a OpenStreetMap">
+  <title>Añadir una referencia POTA a OpenStreetMap · POTA / OpenStreetMap</title>
+  <link rel="stylesheet" href="/help/guides.css">
+  <script src="/help/guides.js" defer></script>
+</head>
+<body class="guide-page guide-language">
+  <header class="page-header">
+    <a class="brand" href="/">EA7KLK POTA Map</a>
+    <a class="header-link" href="/help/index.html">All guide languages</a>
+  </header>
+  <main class="page-shell">
+    <div class="eyebrow">Parks on the Air · OpenStreetMap</div>
+    <a class="editor-link" data-open-editor href="https://www.openstreetmap.org/edit?editor=id&locale=es" target="_blank" rel="noopener noreferrer" hidden>Abrir iD cerca de este parque</a>
+
+    <article class="guide-content">
+<h1>Añadir una referencia POTA a OpenStreetMap</h1>
+<p>Esta guía muestra cómo vincular un parque existente de OpenStreetMap (OSM) con su referencia de Parks on the Air (POTA).</p>
+<h2>Ejemplo de esta guía</h2>
+<p><strong>Parque Natural Sierra de Hornachuelos</strong> — referencia POTA <strong>ES-0016</strong>. Comprueba el parque en la <a href="https://pota.app/#/park/ES-0016" target="_blank" rel="noopener noreferrer">ficha oficial de POTA</a>.</p>
+<h2>Antes de empezar</h2>
+<p>Necesitas una cuenta activa de OpenStreetMap para subir cambios. Si aún no tienes una, <a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">regístrate primero</a> y después inicia sesión. Esta guía usa el editor iD, que funciona en el navegador.</p>
+<h2>Pasos</h2>
+<ol>
+<li><strong>Confirma el parque.</strong> Busca Sierra de Hornachuelos en OSM y comprueba el nombre, el ámbito y las etiquetas del elemento existente que representa el parque completo. Un espacio protegido puede estar mapeado como una relación multipolígono o como una vía cerrada.
+</li>
+<li><strong>Selecciona el elemento completo.</strong> En iD, acerca el mapa y selecciona el área del parque. Si has seleccionado una vía miembro, abre la relación que representa el espacio protegido. No añadas la etiqueta a todas las vías límite.
+</li>
+<li><strong>Añade una sola etiqueta.</strong> En el panel del elemento, abre <strong>Todas las etiquetas</strong> (el texto puede variar según la versión de iD) y añade exactamente:
+<div class="tag-example"><code>communication:amateur_radio:pota=ES-0016</code></div>
+<p>No cambies las etiquetas existentes ni la geometría. No crees un punto o un límite nuevo para el código POTA. Si ya hay una etiqueta POTA o el elemento no está claramente identificado, detente y pide consejo a la comunidad OSM local.</p>
+<p><img src="../docs/images/01-es-select-park.png" alt="Vista real del editor Rapid de OSM con el Parque Natural Sierra de Hornachuelos seleccionado y la etiqueta POTA ES-0016 visible" loading="lazy"></p>
+</li>
+<li><strong>Guarda el borrador y revísalo.</strong> Pulsa <strong>Guardar</strong> para abrir el panel de subida. Lee la lista completa de cambios y comprueba que solo contiene la etiqueta POTA prevista en el elemento correcto. Escribe un comentario descriptivo, por ejemplo: <code>Añadir referencia POTA ES-0016 al Parque Natural Sierra de Hornachuelos</code>.
+</li>
+<li><strong>Haz la confirmación final.</strong> Antes de subir, confirma que el elemento seleccionado representa todo el espacio protegido, que la clave y el valor son exactamente <code>communication:amateur_radio:pota=ES-0016</code> y que no han cambiado la geometría ni otras etiquetas. Lee cualquier aviso. Si algo no coincide, cancela y corrige el borrador. Cuando todo sea correcto, pulsa <strong>Subir</strong> para publicar el cambio en OSM. La subida es la confirmación pública definitiva.
+</li>
+<li><strong>Verifica el cambio publicado.</strong> Cuando iD confirme que la subida se ha realizado, abre el elemento en OSM y comprueba que aparece la etiqueta. Si falla, sigue el mensaje de error y vuelve a intentarlo solo después de revisar los cambios. El mapa POTA puede tardar un poco en actualizarse.
+</li>
+</ol>
+<h2>Enlaces</h2>
+<ul>
+<li><a href="https://pota.app/#/park/ES-0016" target="_blank" rel="noopener noreferrer">Ficha oficial POTA ES-0016</a>
+</li>
+<li><a href="https://www.openstreetmap.org/way/374499973" target="_blank" rel="noopener noreferrer">Elemento del parque en OpenStreetMap</a>
+</li>
+<li><a href="https://www.openstreetmap.org/changeset/189122070" target="_blank" rel="noopener noreferrer">Confirmación pública del cambio</a>
+</li>
+<li><a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">Crear una cuenta de OpenStreetMap</a>
+</li>
+<li><a href="https://wiki.openstreetmap.org/wiki/Key:communication:amateur_radio" target="_blank" rel="noopener noreferrer">Wiki de OpenStreetMap: <code>communication:amateur_radio</code></a>
+</li>
+</ul>
+    </article>
+    <p class="page-footer"><a href="/">Return to the POTA map</a></p>
+  </main>
+</body>
+</html>

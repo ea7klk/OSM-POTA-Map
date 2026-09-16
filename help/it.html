@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Aggiungere un riferimento POTA a OpenStreetMap">
+  <title>Aggiungere un riferimento POTA a OpenStreetMap · POTA / OpenStreetMap</title>
+  <link rel="stylesheet" href="/help/guides.css">
+  <script src="/help/guides.js" defer></script>
+</head>
+<body class="guide-page guide-language">
+  <header class="page-header">
+    <a class="brand" href="/">EA7KLK POTA Map</a>
+    <a class="header-link" href="/help/index.html">All guide languages</a>
+  </header>
+  <main class="page-shell">
+    <div class="eyebrow">Parks on the Air · OpenStreetMap</div>
+    <a class="editor-link" data-open-editor href="https://www.openstreetmap.org/edit?editor=id&locale=it" target="_blank" rel="noopener noreferrer" hidden>Apri iD vicino a questo parco</a>
+
+    <article class="guide-content">
+<h1>Aggiungere un riferimento POTA a OpenStreetMap</h1>
+<p>Questa guida spiega come collegare un elemento esistente di OpenStreetMap (OSM) relativo a un parco al suo riferimento Parks on the Air (POTA).</p>
+<h2>Esempio della guida</h2>
+<p><strong>Campobrun Natura 2000</strong> — ID POTA <strong>IT-0459</strong>. Verifica l’area nella <a href="https://pota.app/#/park/IT-0459" target="_blank" rel="noopener noreferrer">scheda ufficiale POTA</a>.</p>
+<h2>Prima di iniziare</h2>
+<p>Per caricare modifiche serve un account OpenStreetMap attivo. Se non ne hai uno, <a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">registrati prima</a>, poi accedi. Questa guida usa l’editor iD nel browser.</p>
+<h2>Procedura</h2>
+<ol>
+<li><strong>Verifica il parco.</strong> Cerca Campobrun su OSM e controlla nome, estensione e tag esistenti dell’elemento che rappresenta l’intera area protetta. Un’area protetta può essere mappata come relazione multipoligono o come way chiusa.
+</li>
+<li><strong>Seleziona l’elemento completo.</strong> In iD, ingrandisci la mappa e seleziona l’area del parco. Se hai selezionato una way membro, apri la relazione che rappresenta l’area protetta. Non aggiungere il tag a tutte le way del confine.
+</li>
+<li><strong>Aggiungi un solo tag.</strong> Nel pannello dell’elemento apri <strong>Tutti i tag</strong> (la dicitura può variare leggermente secondo la versione di iD) e aggiungi esattamente:
+<div class="tag-example"><code>communication:amateur_radio:pota=IT-0459</code></div>
+<p>Non modificare i tag esistenti né la geometria. Non creare un nuovo punto o confine per il codice POTA. Se il tag POTA esiste già o l’elemento non è chiaro, fermati e chiedi alla comunità OSM locale.</p>
+<p><img src="../docs/images/03-it-select-park.png" alt="Vista reale dell’editor Rapid di OSM con Campobrun Natura 2000 selezionata e il tag POTA IT-0459 visibile" loading="lazy"></p>
+</li>
+<li><strong>Salva la bozza e controllala.</strong> Fai clic su <strong>Salva</strong> per aprire il pannello di caricamento. Leggi l’elenco completo delle modifiche in sospeso e verifica che contenga soltanto il tag POTA previsto sull’elemento corretto. Inserisci un commento descrittivo per il changeset, ad esempio: <code>Aggiunto il riferimento POTA IT-0459 a Campobrun Natura 2000</code>.
+</li>
+<li><strong>Dai la conferma finale.</strong> Prima del caricamento, verifica che l’elemento selezionato rappresenti l’intera area protetta, che chiave e valore siano esattamente <code>communication:amateur_radio:pota=IT-0459</code> e che geometria e altri tag siano invariati. Leggi eventuali avvisi. Se qualcosa non è corretto, annulla e modifica la bozza. Quando tutto è corretto, fai clic su <strong>Carica</strong> per pubblicare la modifica su OSM. Il caricamento è la conferma pubblica definitiva.
+</li>
+<li><strong>Verifica la modifica pubblicata.</strong> Quando iD conferma il caricamento, riapri l’elemento su OSM e controlla che il tag sia presente. Se il caricamento non riesce, segui il messaggio d’errore e riprova solo dopo aver ricontrollato le modifiche. La mappa POTA potrebbe aggiornarsi dopo qualche minuto.
+</li>
+</ol>
+<h2>Collegamenti</h2>
+<ul>
+<li><a href="https://pota.app/#/park/IT-0459" target="_blank" rel="noopener noreferrer">Scheda ufficiale POTA IT-0459</a>
+</li>
+<li><a href="https://www.openstreetmap.org/way/236761019" target="_blank" rel="noopener noreferrer">Area protetta su OpenStreetMap</a>
+</li>
+<li><a href="https://www.openstreetmap.org/changeset/189121840" target="_blank" rel="noopener noreferrer">Conferma pubblica del changeset</a>
+</li>
+<li><a href="https://www.openstreetmap.org/user/new" target="_blank" rel="noopener noreferrer">Crea un account OpenStreetMap</a>
+</li>
+<li><a href="https://wiki.openstreetmap.org/wiki/Key:communication:amateur_radio" target="_blank" rel="noopener noreferrer">Wiki OpenStreetMap: <code>communication:amateur_radio</code></a>
+</li>
+</ul>
+    </article>
+    <p class="page-footer"><a href="/">Return to the POTA map</a></p>
+  </main>
+</body>
+</html>
