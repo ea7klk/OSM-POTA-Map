@@ -2,9 +2,16 @@ name: Docker Build and Push
 
 on:
   push:
+    branches:
+      - 'release/**'
     tags:
       - 'v*.*'
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (for example 0.8.0 or v0.8.0)"
+        required: true
+        type: string
 
 env:
   REGISTRY: ghcr.io
@@ -23,7 +30,20 @@ jobs:
 
       - name: Get tag
         id: get_tag
-        run: echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+        env:
+          VERSION_INPUT: ${{ github.event.inputs.version }}
+        run: |
+          if [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
+            TAG="${GITHUB_REF#refs/heads/release/}"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && -n "${VERSION_INPUT}" ]]; then
+            TAG="${VERSION_INPUT}"
+            [[ "${TAG}" == v* ]] || TAG="v${TAG}"
+          else
+            TAG=""
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -48,7 +68,7 @@ jobs:
             type=ref,event=tag
             type=semver,pattern={{version}}
             type=sha
-            type=raw,value=${{ steps.get_tag.outputs.tag }}
+            type=raw,value=${{ steps.get_tag.outputs.tag }},enable=${{ steps.get_tag.outputs.tag != '' }}
 
       - name: Build and push Docker image
         id: build-and-push
@@ -63,11 +83,12 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Create Release
-        if: github.event_name == 'workflow_dispatch'
+        if: startsWith(github.ref, 'refs/heads/release/') || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.event.inputs.version }}
-          name: Release ${{ github.event.inputs.version }}
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: OSM-POTA-Map ${{ steps.get_tag.outputs.tag }}
+          target_commitish: ${{ github.sha }}
           draft: false
           prerelease: false
         env:
