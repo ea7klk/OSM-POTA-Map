@@ -14,7 +14,15 @@ class OSM4Leaflet extends L.Layer {
         this.markerLayer = L.markerClusterGroup({
             chunkedLoading: true,
             showCoverageOnHover: false,
-            spiderfyOnMaxZoom: true
+            spiderfyOnMaxZoom: true,
+            iconCreateFunction: cluster => {
+                const childCount = cluster.getChildCount();
+                return L.divIcon({
+                    html: `<span class="pota-osm-cluster-count">${childCount}</span>`,
+                    className: 'pota-osm-cluster',
+                    iconSize: [44, 44]
+                });
+            }
         });
         this.catalogueLayer = L.markerClusterGroup({
             chunkedLoading: true,
@@ -210,7 +218,7 @@ class OSM4Leaflet extends L.Layer {
 
     addCatalogueData(catalogue, osmReferences) {
         this.catalogueLayer.clearLayers();
-        if (this.map.getZoom() <= 8 || !Array.isArray(catalogue.features)) return;
+        if (!Array.isArray(catalogue.features)) return;
 
         catalogue.features.forEach(feature => {
             const properties = feature.properties || {};
@@ -266,7 +274,6 @@ class OSM4Leaflet extends L.Layer {
         this.baseLayer.clearLayers();
         this.markerLayer.clearLayers();
         
-        const currentZoom = this.map.getZoom();
         const potaElements = new Map();
         const markers = [];
 
@@ -283,11 +290,6 @@ class OSM4Leaflet extends L.Layer {
                 
                 const isUnmapped = feature.properties.tags['unmapped_osm'] === 'true';
                 
-                // Skip unmapped features if zoom level is <= 8
-                if (isUnmapped && currentZoom <= 8) {
-                    return;
-                }
-                
                 if (potaId) {
                     if (!potaElements.has(potaId)) {
                         potaElements.set(potaId, []);
@@ -295,7 +297,6 @@ class OSM4Leaflet extends L.Layer {
                     potaElements.get(potaId).push(feature);
                 }
                 
-                // Add to base layer only if not unmapped or zoom level > 8
                 this.baseLayer.addData(feature);
             }
         });
@@ -316,11 +317,6 @@ class OSM4Leaflet extends L.Layer {
 
             const name = features[0].properties.tags.name || 'Unnamed';
             const isUnmapped = features[0].properties.tags['unmapped_osm'] === 'true';
-
-            // Skip marker creation for unmapped features if zoom level is <= 8
-            if (isUnmapped && currentZoom <= 8) {
-                return;
-            }
 
             let popupContent = `<div style="text-align: center;"><b>${name}</b><br>POTA-ID: <a href="https://pota.app/#/park/${potaId}" target="_blank">${potaId}</a>`;
             if (isUnmapped) {

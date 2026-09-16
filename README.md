@@ -13,9 +13,11 @@ OSM POTA reference.
   its park references with the complete OSM reference index. Only parks whose
   references are absent from OSM are returned, using the coordinates in the
   CSV. The map links to OSM so contributors can add the missing reference.
-- The catalogue uses its own Leaflet layer and amber cluster icon. OSM results
-  always take precedence, including when the matching OSM park is outside the
-  current map view.
+- Overpass clusters use a green style. Unmapped catalogue markers and their
+  clusters use a red style, in a separate Leaflet layer. The catalogue remains
+  visible at every zoom level while the current bounding box is within the
+  query limit. OSM results always take precedence, including when the matching
+  OSM park is outside the current map view.
 
 The CSV is not written into the replicated Overpass database. The server loads
 it on startup and refreshes it nightly at 02:00 UTC. The OSM reference index is

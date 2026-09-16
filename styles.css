@@ -26,31 +26,39 @@ header h1 {
 }
 
 .pota-catalogue-marker {
-    background: #fff8e1;
-    border: 2px solid #a34800;
+    background: #ffebee;
+    border: 2px solid #b71c1c;
     border-radius: 50%;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
-    color: #8a3700;
+    color: #b71c1c;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
 }
 
+.pota-osm-cluster,
 .pota-catalogue-cluster {
     align-items: center;
-    background: rgba(255, 143, 0, 0.3);
-    border: 2px solid #a34800;
     border-radius: 50%;
     box-sizing: border-box;
     display: flex;
     justify-content: center;
 }
 
+.pota-osm-cluster {
+    background: rgba(67, 160, 71, 0.3);
+    border: 2px solid #1b5e20;
+}
+
+.pota-catalogue-cluster {
+    background: rgba(211, 47, 47, 0.28);
+    border: 2px solid #b71c1c;
+}
+
+.pota-osm-cluster-count,
 .pota-catalogue-cluster-count {
     align-items: center;
-    background: #a34800;
-    border: 2px solid #fff8e1;
     border-radius: 50%;
     box-sizing: border-box;
     color: #fff;
@@ -62,6 +70,16 @@ header h1 {
     line-height: 1;
     min-width: 30px;
     padding: 0 4px;
+}
+
+.pota-osm-cluster-count {
+    background: #2e7d32;
+    border: 2px solid #e8f5e9;
+}
+
+.pota-catalogue-cluster-count {
+    background: #c62828;
+    border: 2px solid #ffebee;
 }
 
 .pota-catalogue-popup {
