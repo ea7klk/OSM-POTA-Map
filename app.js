@@ -15,8 +15,10 @@ class OSM4Leaflet extends L.Layer {
             showCoverageOnHover: false,
             spiderfyOnMaxZoom: true
         });
+        this.catalogueLayer = L.layerGroup();
         this.errorPopup = null;
         this.loadDataTimeout = null;
+        this.loadRequestId = 0;
     }
 
     onAdd(map) {
@@ -61,18 +63,33 @@ class OSM4Leaflet extends L.Layer {
         }, 250); // 250ms debounce delay
     }
 
-    loadData() {
+    async loadData() {
         const bounds = this.map.getBounds();
         const extendedBounds = this.extendBounds(bounds);
         const query = this.buildOverpassQuery(extendedBounds);
-        this.fetchPOTAData(query).then(data => {
-            if (data) {
-                this.addData(data);
-                this.clearErrorPopup();
-            } else {
-                this.showErrorPopup();
-            }
-        });
+        const requestId = ++this.loadRequestId;
+        const results = await Promise.allSettled([
+            this.fetchPOTAData(query),
+            this.fetchCatalogueData(extendedBounds)
+        ]);
+        if (requestId !== this.loadRequestId) return;
+
+        const [osmResult, catalogueResult] = results;
+        let osmReferences = new Set();
+        if (osmResult.status === 'fulfilled' && osmResult.value && Array.isArray(osmResult.value.elements)) {
+            this.addData(osmResult.value);
+            osmReferences = collectPotaRefsFromResponse(osmResult.value);
+            this.clearErrorPopup();
+        } else {
+            this.showErrorPopup();
+        }
+
+        if (catalogueResult.status === 'fulfilled' && catalogueResult.value) {
+            this.addCatalogueData(catalogueResult.value, osmReferences);
+        } else {
+            console.error('Error fetching POTA catalogue data:', catalogueResult.reason);
+            this.catalogueLayer.clearLayers();
+        }
     }
 
     extendBounds(bounds) {
@@ -111,6 +128,24 @@ class OSM4Leaflet extends L.Layer {
         }
     }
 
+    async fetchCatalogueData(bounds) {
+        const { _southWest, _northEast } = bounds;
+        const catalogueUrl = new URL(window.POTA_CATALOGUE_URL || '/api/pota/unmapped', window.location.href);
+        catalogueUrl.search = new URLSearchParams({
+            south: _southWest.lat,
+            west: _southWest.lng,
+            north: _northEast.lat,
+            east: _northEast.lng
+        }).toString();
+
+        const response = await fetch(catalogueUrl, {
+            headers: { Accept: 'application/geo+json, application/json' },
+            cache: 'no-store'
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+    }
+
     showErrorPopup() {
         const popupContent = '<div style="text-align: center;">The selected area is too large. Please zoom in.</div>';
         if (this.errorPopup) {
@@ -132,6 +167,54 @@ class OSM4Leaflet extends L.Layer {
 
     closeAllPopups() {
         this.map.closePopup();
+    }
+
+    addCatalogueData(catalogue, osmReferences) {
+        this.catalogueLayer.clearLayers();
+        if (this.map.getZoom() <= 8 || !Array.isArray(catalogue.features)) return;
+
+        catalogue.features.forEach(feature => {
+            const properties = feature.properties || {};
+            const reference = String(properties.pota_ref || '').trim();
+            const normalizedReference = normalizePotaReference(reference);
+            const coordinates = feature.geometry && feature.geometry.coordinates;
+            if (!reference || !normalizedReference || !Array.isArray(coordinates) || coordinates.length < 2) return;
+
+            // The catalogue endpoint excludes all globally mapped POTA refs.
+            // This viewport check also makes an OSM result win immediately if
+            // it appears before the next cached global-index refresh.
+            if (osmReferences.has(normalizedReference)) return;
+
+            const [longitude, latitude] = coordinates;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+
+            const marker = L.marker([latitude, longitude], {
+                icon: L.divIcon({
+                    html: '<span class="material-icons">info</span>',
+                    className: 'pota-catalogue-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    popupAnchor: [0, -14]
+                })
+            });
+
+            const safeName = escapeHtml(properties.name || reference);
+            const safeReference = escapeHtml(reference);
+            const potaUrl = `https://pota.app/#/park/${encodeURIComponent(reference)}`;
+            const editUrl = new URL('https://www.openstreetmap.org/edit');
+            editUrl.searchParams.set('editor', 'id');
+            editUrl.searchParams.set('lat', latitude);
+            editUrl.searchParams.set('lon', longitude);
+            editUrl.searchParams.set('zoom', '16');
+            const popupContent = `<div class="pota-catalogue-popup"><b>${safeName}</b><br>` +
+                `POTA ID: <a href="${potaUrl}" target="_blank" rel="noopener noreferrer">${safeReference}</a>` +
+                '<br>This POTA park is not yet linked to an OpenStreetMap feature.' +
+                '<br>The marker position comes from the POTA catalogue and may be approximate.' +
+                `<br><a href="${editUrl.href}" target="_blank" rel="noopener noreferrer">Help map it in OpenStreetMap</a>` +
+                `<br>Add <code>communication:amateur_radio:pota=${safeReference}</code> to the park feature.</div>`;
+            marker.bindPopup(popupContent);
+            marker.addTo(this.catalogueLayer);
+        });
     }
 
     addData(osmData) {
@@ -277,6 +360,32 @@ class OSM4Leaflet extends L.Layer {
     }
 }
 
+function normalizePotaReference(value) {
+    return String(value || '').trim().toUpperCase();
+}
+
+function collectPotaRefsFromResponse(osmData) {
+    const references = new Set();
+    (osmData.elements || []).forEach(element => {
+        const value = element.tags && element.tags['communication:amateur_radio:pota'];
+        String(value || '').split(';').forEach(reference => {
+            const normalized = normalizePotaReference(reference);
+            if (normalized) references.add(normalized);
+        });
+    });
+    return references;
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
 // Initialize the map
 let initialView = [50, 10]; // Default center of Europe
 let initialZoom = 4; // Default zoom level
@@ -380,6 +489,13 @@ const osmLayer = new OSM4Leaflet({
     }
 });
 osmLayer.addTo(map);
+
+const potaCatalogueLayer = osmLayer.catalogueLayer;
+potaCatalogueLayer.addTo(map);
+L.control.layers(null, {
+    'OpenStreetMap POTA features': osmLayer,
+    'POTA catalogue parks not linked in OSM': potaCatalogueLayer
+}, { collapsed: true }).addTo(map);
 
 // Add locate control
 L.control.locate({

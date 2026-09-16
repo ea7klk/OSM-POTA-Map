@@ -25,6 +25,27 @@ header h1 {
     overflow: hidden;
 }
 
+.pota-catalogue-marker {
+    background: #fff8e1;
+    border: 2px solid #a34800;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+    color: #8a3700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.pota-catalogue-popup {
+    max-width: 280px;
+    text-align: center;
+}
+
+.pota-catalogue-popup code {
+    overflow-wrap: anywhere;
+}
+
 footer {
     font-size: 0.8rem;
     overflow-wrap: break-word;
