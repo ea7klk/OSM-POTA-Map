@@ -48,6 +48,13 @@ function headerIndex(headers, names, fallback) {
     return index === -1 ? fallback : index;
 }
 
+function parsePotaActive(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (['1', 'true', 'yes', 'active'].includes(normalized)) return true;
+    if (['0', 'false', 'no', 'inactive'].includes(normalized)) return false;
+    return null;
+}
+
 function parsePotaCsv(text) {
     const rows = parseCsv(text);
     if (rows.length < 2) throw new Error('POTA CSV has no park rows');
@@ -67,10 +74,10 @@ function parsePotaCsv(text) {
     for (const values of rows.slice(1)) {
         const reference = (values[columns.reference] || '').trim();
         const name = (values[columns.name] || '').trim();
-        const active = (values[columns.active] || '').trim().toLowerCase();
+        const active = parsePotaActive(values[columns.active]);
         const latitudeText = (values[columns.latitude] || '').trim();
         const longitudeText = (values[columns.longitude] || '').trim();
-        if (!reference || !['1', 'true', 'yes', 'active'].includes(active)) continue;
+        if (!reference) continue;
         if (!latitudeText || !longitudeText) continue;
 
         const latitude = Number(latitudeText);
@@ -82,11 +89,12 @@ function parsePotaCsv(text) {
             reference,
             name: name || reference,
             latitude,
-            longitude
+            longitude,
+            active
         });
     }
 
-    if (parks.size === 0) throw new Error('POTA CSV did not contain any active parks with valid coordinates');
+    if (parks.size === 0) throw new Error('POTA CSV did not contain any parks with valid coordinates');
     return Array.from(parks.values());
 }
 
@@ -201,6 +209,7 @@ class PotaCatalogueService {
             this.getCache('references')
         ]);
         const features = parkCache.value
+            .filter(park => park.active === true)
             .filter(park => !referenceCache.value.has(normalizePotaReference(park.reference)))
             .filter(park => isInsideBounds(park, bounds))
             .map(park => ({
@@ -222,6 +231,26 @@ class PotaCatalogueService {
             metadata: {
                 csvUpdatedAt: new Date(parkCache.fetchedAt).toISOString(),
                 osmReferencesUpdatedAt: new Date(referenceCache.fetchedAt).toISOString()
+            }
+        };
+    }
+
+    async getPotaStatus() {
+        const parkCache = await this.getCache('parks');
+        const parks = {};
+        parkCache.value.forEach(park => {
+            parks[normalizePotaReference(park.reference)] = {
+                reference: park.reference,
+                name: park.name,
+                active: park.active
+            };
+        });
+
+        return {
+            parks,
+            metadata: {
+                csvUpdatedAt: new Date(parkCache.fetchedAt).toISOString(),
+                stale: Boolean(parkCache.lastError)
             }
         };
     }
@@ -302,6 +331,7 @@ module.exports = {
     collectPotaReferences,
     isInsideBounds,
     normalizePotaReference,
+    parsePotaActive,
     parseCsv,
     parsePotaCsv,
     splitPotaReferences,

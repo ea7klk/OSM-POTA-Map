@@ -50,6 +50,17 @@ app.get('/api/pota/unmapped', async (req, res) => {
     }
 });
 
+app.get('/api/pota/status', async (req, res) => {
+    try {
+        const status = await potaCatalogue.getPotaStatus();
+        res.set('Cache-Control', 'private, max-age=60');
+        return res.json(status);
+    } catch (error) {
+        console.error(`Unable to load POTA status data: ${error.message}`);
+        return res.status(503).json({ error: 'The POTA status data is temporarily unavailable.' });
+    }
+});
+
 app.get('/config.js', (req, res) => {
     res.set('Content-Type', 'application/javascript');
     res.send(`
@@ -58,6 +69,7 @@ app.get('/config.js', (req, res) => {
         window.MATOMO_SITE_ID = '${MATOMO_SITE_ID}';
         window.OVERPASS_URL = '${OVERPASS_URL}';
         window.POTA_CATALOGUE_URL = '/api/pota/unmapped';
+        window.POTA_STATUS_URL = '/api/pota/status';
     `);
 });
 

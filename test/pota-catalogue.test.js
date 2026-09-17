@@ -5,6 +5,7 @@ const {
     collectPotaReferences,
     isInsideBounds,
     millisecondsUntilNextUtcHour,
+    parsePotaActive,
     parsePotaCsv
 } = require('../pota-catalogue');
 
@@ -20,9 +21,19 @@ test('parses quoted CSV cells, reordered headers, active status and coordinates'
     const parks = parsePotaCsv(csv);
 
     assert.deepEqual(parks, [
-        { reference: 'ES-0001', name: 'Mapped Park', latitude: 40.4, longitude: -3.5 },
-        { reference: 'ES-0002', name: 'Unmapped, Park', latitude: 41.75, longitude: -4.25 }
+        { reference: 'ES-0001', name: 'Mapped Park', latitude: 40.4, longitude: -3.5, active: true },
+        { reference: 'ES-0002', name: 'Unmapped, Park', latitude: 41.75, longitude: -4.25, active: true },
+        { reference: 'ES-0003', name: 'Inactive Park', latitude: 41, longitude: -4, active: false }
     ]);
+});
+
+test('parses active status values without treating unknown values as active', () => {
+    assert.equal(parsePotaActive('1'), true);
+    assert.equal(parsePotaActive('TRUE'), true);
+    assert.equal(parsePotaActive('0'), false);
+    assert.equal(parsePotaActive('inactive'), false);
+    assert.equal(parsePotaActive(''), null);
+    assert.equal(parsePotaActive('pending'), null);
 });
 
 test('supports the fixed catalogue column positions used by the previous fetcher', () => {
@@ -32,7 +43,7 @@ test('supports the fixed catalogue column positions used by the previous fetcher
     ].join('\n'));
 
     assert.deepEqual(parks, [
-        { reference: 'ES-0123', name: 'Test Park', latitude: 36.1, longitude: -5.4 }
+        { reference: 'ES-0123', name: 'Test Park', latitude: 36.1, longitude: -5.4, active: true }
     ]);
 });
 
@@ -133,6 +144,30 @@ test('returns only CSV parks without a globally matching OSM reference', async (
     assert.equal(response.features[0].properties.source, 'pota_csv');
     assert.ok(response.metadata.csvUpdatedAt);
     assert.ok(response.metadata.osmReferencesUpdatedAt);
+});
+
+test('returns inactive parks in the status catalogue while excluding them from unmapped parks', async () => {
+    const service = new PotaCatalogueService({
+        logger: { warn() {} },
+        fetchImpl: async url => {
+            if (url === 'https://csv.test/parks.csv') return { ok: true, text: async () => csv };
+            return { ok: true, json: async () => ({ elements: [] }) };
+        },
+        csvUrl: 'https://csv.test/parks.csv',
+        overpassUrl: 'https://overpass.test/api/interpreter'
+    });
+
+    const status = await service.getPotaStatus();
+    assert.equal(status.parks['ES-0003'].active, false);
+    assert.equal(status.parks['ES-0003'].name, 'Inactive Park');
+
+    const unmapped = await service.getUnmappedParks({
+        south: 40,
+        west: -5,
+        north: 42,
+        east: -3
+    });
+    assert.deepEqual(unmapped.features.map(feature => feature.properties.pota_ref), ['ES-0001', 'ES-0002']);
 });
 
 test('fails closed when an expired OSM reference index cannot be refreshed', async () => {

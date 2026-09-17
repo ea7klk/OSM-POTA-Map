@@ -91,6 +91,91 @@ header h1 {
     overflow-wrap: anywhere;
 }
 
+.pota-osm-popup {
+    max-width: 300px;
+    text-align: center;
+}
+
+.pota-status-inactive,
+.pota-status-mixed {
+    display: inline-block;
+    margin-top: 0.35rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 0.25rem;
+}
+
+.pota-status-inactive {
+    background: #eeeeee;
+    color: #424242;
+}
+
+.pota-status-mixed {
+    background: #fff3cd;
+    color: #6b4f00;
+}
+
+.pota-inactive-marker {
+    align-items: center;
+    background: #eeeeee;
+    border: 2px solid #616161;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+}
+
+.pota-inactive-marker-mixed {
+    background: #fff3cd;
+    border-color: #a66b00;
+}
+
+.pota-inactive-icon {
+    color: #616161;
+    font-size: 22px;
+}
+
+.pota-inactive-marker-mixed .pota-inactive-icon {
+    color: #8a5a00;
+}
+
+.pota-status-legend {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.75rem;
+}
+
+.pota-status-legend span {
+    align-items: center;
+    display: flex;
+    gap: 0.35rem;
+}
+
+.pota-legend-swatch {
+    border: 1px solid #424242;
+    border-radius: 50%;
+    display: inline-block;
+    height: 0.7rem;
+    width: 0.7rem;
+}
+
+.pota-legend-active {
+    background: #43a047;
+}
+
+.pota-legend-inactive {
+    background: #757575;
+}
+
+.pota-legend-unmapped {
+    background: #b71c1c;
+}
+
 footer {
     font-size: 0.8rem;
     overflow-wrap: break-word;

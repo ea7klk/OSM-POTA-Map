@@ -9,21 +9,28 @@ OSM POTA reference.
 
 - **OpenStreetMap:** OSM geometries and markers tagged with
   `communication:amateur_radio:pota` are displayed in the regular marker layer.
-- **Unmapped POTA catalogue:** The server downloads the POTA CSV and compares
-  its park references with the complete OSM reference index. Only parks whose
-  references are absent from OSM are returned, using the coordinates in the
-  CSV. The map links to OSM so contributors can add the missing reference.
-- Overpass clusters use a green style. Unmapped catalogue markers and their
-  clusters use a red style, in a separate Leaflet layer. The catalogue remains
-  visible at every zoom level while the current bounding box is within the
-  query limit. OSM results always take precedence, including when the matching
-  OSM park is outside the current map view.
+- **POTA status:** The server downloads the POTA CSV and uses its `active` field
+  to label mapped OSM features. Inactive parks remain visible because they may
+  be reactivated in the future, but use muted styling and an explicit inactive
+  status in their popups.
+- **Unmapped POTA catalogue:** The server compares active CSV park references
+  with the complete OSM reference index. Only active parks whose references are
+  absent from OSM are returned, using the coordinates in the CSV. The map links
+  to OSM so contributors can add the missing reference.
+- Overpass clusters use a green style. Inactive OSM parks use muted gray or
+  amber styling, while unmapped catalogue markers and their clusters use a red
+  style in a separate Leaflet layer. The catalogue remains visible at every
+  zoom level while the current bounding box is within the query limit. OSM
+  results always take precedence, including when the matching OSM park is
+  outside the current map view.
 
 The CSV is not written into the replicated Overpass database. The server loads
 it on startup and refreshes it nightly at 02:00 UTC. The OSM reference index is
 refreshed when needed, with a one-minute freshness window. If a refresh fails,
 the last good CSV remains available; the server fails closed when it cannot
-confirm OSM references, to avoid displaying duplicate parks.
+confirm OSM references, to avoid displaying duplicate parks. The status data is
+served by `/api/pota/status`, while `/api/pota/unmapped` remains restricted to
+active parks only.
 
 ## Query limits
 
