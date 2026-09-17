@@ -42,11 +42,22 @@ app.get('/api/pota/unmapped', async (req, res) => {
 
     try {
         const catalogue = await potaCatalogue.getUnmappedParks(bounds);
-        res.set('Cache-Control', 'private, max-age=60');
+        res.set('Cache-Control', 'private, max-age=300');
         return res.json(catalogue);
     } catch (error) {
         console.error(`Unable to load the POTA catalogue: ${error.message}`);
         return res.status(503).json({ error: 'The POTA catalogue is temporarily unavailable.' });
+    }
+});
+
+app.get('/api/pota/status', async (req, res) => {
+    try {
+        const status = await potaCatalogue.getPotaStatus();
+        res.set('Cache-Control', 'private, max-age=60');
+        return res.json(status);
+    } catch (error) {
+        console.error(`Unable to load POTA status data: ${error.message}`);
+        return res.status(503).json({ error: 'The POTA status data is temporarily unavailable.' });
     }
 });
 
@@ -58,6 +69,7 @@ app.get('/config.js', (req, res) => {
         window.MATOMO_SITE_ID = '${MATOMO_SITE_ID}';
         window.OVERPASS_URL = '${OVERPASS_URL}';
         window.POTA_CATALOGUE_URL = '/api/pota/unmapped';
+        window.POTA_STATUS_URL = '/api/pota/status';
     `);
 });
 
