@@ -42,7 +42,7 @@ app.get('/api/pota/unmapped', async (req, res) => {
 
     try {
         const catalogue = await potaCatalogue.getUnmappedParks(bounds);
-        res.set('Cache-Control', 'private, max-age=60');
+        res.set('Cache-Control', 'private, max-age=300');
         return res.json(catalogue);
     } catch (error) {
         console.error(`Unable to load the POTA catalogue: ${error.message}`);

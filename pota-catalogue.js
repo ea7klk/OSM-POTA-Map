@@ -237,17 +237,12 @@ class PotaCatalogueService {
 
     async getPotaStatus() {
         const parkCache = await this.getCache('parks');
-        const parks = {};
-        parkCache.value.forEach(park => {
-            parks[normalizePotaReference(park.reference)] = {
-                reference: park.reference,
-                name: park.name,
-                active: park.active
-            };
-        });
+        const inactive = parkCache.value
+            .filter(park => park.active === false)
+            .map(park => normalizePotaReference(park.reference));
 
         return {
-            parks,
+            inactive,
             metadata: {
                 csvUpdatedAt: new Date(parkCache.fetchedAt).toISOString(),
                 stale: Boolean(parkCache.lastError)

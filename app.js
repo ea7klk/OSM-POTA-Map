@@ -120,6 +120,9 @@ class OSM4Leaflet extends L.Layer {
         this.errorPopup = null;
         this.loadDataTimeout = null;
         this.loadRequestId = 0;
+        this.statusCache = { value: null, fetchedAt: 0 };
+        this.statusRequest = null;
+        this.statusRefreshMs = 5 * 60 * 1000;
     }
 
     onAdd(map) {
@@ -194,9 +197,9 @@ class OSM4Leaflet extends L.Layer {
         if (requestId !== this.loadRequestId) return;
 
         const [osmResult, catalogueResult, statusResult] = results;
-        if (statusResult.status === 'fulfilled' && statusResult.value && statusResult.value.parks) {
-            potaStatus = new Map(Object.entries(statusResult.value.parks)
-                .map(([reference, status]) => [normalizePotaReference(reference), status]));
+        if (statusResult.status === 'fulfilled' && statusResult.value && Array.isArray(statusResult.value.inactive)) {
+            potaStatus = new Map(statusResult.value.inactive
+                .map(reference => [normalizePotaReference(reference), { active: false }]));
         } else if (statusResult.status === 'rejected') {
             console.error('Error fetching POTA status data:', statusResult.reason);
         }
@@ -281,16 +284,29 @@ class OSM4Leaflet extends L.Layer {
     }
 
     async fetchStatusData() {
-        const statusUrl = new URL(window.POTA_STATUS_URL || '/api/pota/status', window.location.href);
-        const response = await fetch(statusUrl, {
-            headers: { Accept: 'application/json' },
-            cache: 'no-store'
-        });
-        if (!response.ok) {
-            const details = await response.json().catch(() => ({}));
-            throw new Error(details.error || `HTTP error! status: ${response.status}`);
+        const now = Date.now();
+        if (this.statusCache.value && now - this.statusCache.fetchedAt < this.statusRefreshMs) {
+            return this.statusCache.value;
         }
-        return response.json();
+        if (this.statusRequest) return this.statusRequest;
+
+        const statusUrl = new URL(window.POTA_STATUS_URL || '/api/pota/status', window.location.href);
+        this.statusRequest = (async () => {
+            const response = await fetch(statusUrl, {
+                headers: { Accept: 'application/json' },
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                const details = await response.json().catch(() => ({}));
+                throw new Error(details.error || `HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            this.statusCache = { value: data, fetchedAt: Date.now() };
+            return data;
+        })().finally(() => {
+            this.statusRequest = null;
+        });
+        return this.statusRequest;
     }
 
     showErrorPopup(message = 'The selected area is too large. Please zoom in.') {
