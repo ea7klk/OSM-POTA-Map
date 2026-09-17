@@ -29,8 +29,10 @@ it on startup and refreshes it nightly at 02:00 UTC. The OSM reference index is
 refreshed when needed, with a one-minute freshness window. If a refresh fails,
 the last good CSV remains available; the server fails closed when it cannot
 confirm OSM references, to avoid displaying duplicate parks. The status data is
-served by `/api/pota/status`, while `/api/pota/unmapped` remains restricted to
-active parks only.
+served by `/api/pota/status` as a compact set of currently inactive references,
+while `/api/pota/unmapped` remains restricted to active parks only. An OSM
+reference that is not present in the current CSV is left visible with no
+inactive label, because the catalogue cannot confirm its status.
 
 ## Query limits
 
