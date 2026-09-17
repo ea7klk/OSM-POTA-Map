@@ -18,7 +18,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: potamap-test
-          image: ghcr.io/ea7klk/osm-pota-map:v0.11.7-test
+          image: ghcr.io/ea7klk/osm-pota-map:v0.11.8-test
           imagePullPolicy: Always
           command: ["docker-entrypoint.sh"]
           args: ["node", "server.js"]
