@@ -66,7 +66,7 @@ The server accepts these environment variables:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `OVERPASS_URL` | `https://overpass.ea7klk.es/api/interpreter` | Overpass endpoint used by the map and OSM reference index. |
+| `OVERPASS_URL` | `https://api.spainip.es/v1/overpass/interpreter` | Overpass endpoint used by the map and OSM reference index. |
 | `POTA_CSV_URL` | `https://pota.app/all_parks_ext.csv` | POTA park catalogue CSV. |
 | `POTA_CSV_REFRESH_MS` | 24 hours | CSV cache freshness fallback. The scheduled refresh runs at the configured UTC hour. |
 | `POTA_CSV_REFRESH_HOUR_UTC` | `2` | UTC hour for the nightly CSV refresh. |

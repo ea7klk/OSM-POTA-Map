@@ -157,7 +157,7 @@ function millisecondsUntilNextUtcHour(now, hour) {
 class PotaCatalogueService {
     constructor(options = {}) {
         this.csvUrl = options.csvUrl || DEFAULT_POTA_CSV_URL;
-        this.overpassUrl = options.overpassUrl || 'https://overpass.ea7klk.es/api/interpreter';
+        this.overpassUrl = options.overpassUrl || 'https://api.spainip.es/v1/overpass/interpreter';
         this.fetchImpl = options.fetchImpl || globalThis.fetch;
         this.now = options.now || Date.now;
         this.setTimeoutImpl = options.setTimeoutImpl || setTimeout;
@@ -319,14 +319,13 @@ class PotaCatalogueService {
     }
 
     async fetchReferences() {
-        const response = await this.fetchImpl(this.overpassUrl, {
-            method: 'POST',
+        const separator = this.overpassUrl.includes('?') ? '&' : '?';
+        const url = `${this.overpassUrl}${separator}data=${encodeURIComponent(OSM_REFERENCE_QUERY)}`;
+        const response = await this.fetchImpl(url, {
             headers: {
                 'User-Agent': 'OSM-POTA-Map/1.0 (+https://github.com/ea7klk/OSM-POTA-Map)',
-                Accept: 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                Accept: 'application/json'
             },
-            body: new URLSearchParams({ data: OSM_REFERENCE_QUERY }).toString(),
             signal: AbortSignal.timeout(this.requestTimeoutMs)
         });
         if (!response.ok) throw new Error(`Overpass reference query returned HTTP ${response.status}`);
