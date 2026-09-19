@@ -240,13 +240,26 @@ class PotaCatalogueService {
         const inactive = parkCache.value
             .filter(park => park.active === false)
             .map(park => normalizePotaReference(park.reference));
-        const names = Object.fromEntries(parkCache.value.map(park => [
-            normalizePotaReference(park.reference),
-            park.name
-        ]));
 
         return {
             inactive,
+            metadata: {
+                csvUpdatedAt: new Date(parkCache.fetchedAt).toISOString(),
+                stale: Boolean(parkCache.lastError)
+            }
+        };
+    }
+
+    async getPotaNames(references) {
+        const requested = new Set((references || [])
+            .map(normalizePotaReference)
+            .filter(Boolean));
+        const parkCache = await this.getCache('parks');
+        const names = Object.fromEntries(parkCache.value
+            .filter(park => requested.has(normalizePotaReference(park.reference)))
+            .map(park => [normalizePotaReference(park.reference), park.name]));
+
+        return {
             names,
             metadata: {
                 csvUpdatedAt: new Date(parkCache.fetchedAt).toISOString(),
