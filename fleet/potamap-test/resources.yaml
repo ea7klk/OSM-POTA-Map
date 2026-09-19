@@ -73,7 +73,7 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`potamap.test-ea7klk.es`)
+      match: Host(`potamap.test.ea7klk.es`)
       services:
         - name: potamap-test
           port: 3000
