@@ -159,6 +159,11 @@ test('returns inactive parks in the status catalogue while excluding them from u
 
     const status = await service.getPotaStatus();
     assert.deepEqual(status.inactive, ['ES-0003']);
+    assert.deepEqual(status.names, {
+        'ES-0001': 'Mapped Park',
+        'ES-0002': 'Unmapped, Park',
+        'ES-0003': 'Inactive Park'
+    });
 
     const unmapped = await service.getUnmappedParks({
         south: 40,
