@@ -255,7 +255,7 @@ class OSM4Leaflet extends L.Layer {
     }
 
     async fetchPOTAData(query) {
-        const overpassUrl = window.OVERPASS_URL || 'https://overpass.ea7klk.es/api/interpreter';
+        const overpassUrl = window.OVERPASS_URL || 'https://api.spainip.es/v1/overpass/interpreter';
         const url = `${overpassUrl}?data=${encodeURIComponent(query)}`;
         
         try {

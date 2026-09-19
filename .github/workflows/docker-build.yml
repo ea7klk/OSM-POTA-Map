@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'release/**'
+      - 'feature/test-fusio-api'
     tags:
       - 'v*.*'
   workflow_dispatch:
@@ -33,7 +34,9 @@ jobs:
         env:
           VERSION_INPUT: ${{ github.event.inputs.version }}
         run: |
-          if [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
+          if [[ "${GITHUB_REF}" == refs/heads/feature/test-fusio-api ]]; then
+            TAG="test"
+          elif [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
             TAG="${GITHUB_REF#refs/heads/release/}"
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
