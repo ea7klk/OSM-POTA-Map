@@ -102,7 +102,7 @@
               },
               {
                 "name": "OVERPASS_URL",
-                "value": "https://overpass.ea7klk.es/api/interpreter"
+                "value": "https://api.spainip.es/v1/overpass/interpreter"
               }
             ]
           }
