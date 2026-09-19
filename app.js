@@ -5,6 +5,7 @@ link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
 const { MAX_BBOX_AREA_KM2, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
 let potaStatus = new Map();
+let potaNames = new Map();
 
 function normalizePotaReference(value) {
     return String(value || '').trim().toUpperCase();
@@ -15,6 +16,13 @@ function splitPotaReferences(value) {
         .split(';')
         .map(normalizePotaReference)
         .filter(Boolean);
+}
+
+function getPotaOfficialName(value) {
+    const names = (Array.isArray(value) ? value : splitPotaReferences(value))
+        .map(reference => potaNames.get(normalizePotaReference(reference)))
+        .filter(Boolean);
+    return names.join(' / ');
 }
 
 function getPotaIdFromFeature(feature) {
@@ -200,6 +208,8 @@ class OSM4Leaflet extends L.Layer {
         if (statusResult.status === 'fulfilled' && statusResult.value && Array.isArray(statusResult.value.inactive)) {
             potaStatus = new Map(statusResult.value.inactive
                 .map(reference => [normalizePotaReference(reference), { active: false }]));
+            potaNames = new Map(Object.entries(statusResult.value.names || {})
+                .map(([reference, name]) => [normalizePotaReference(reference), String(name)]));
         } else if (statusResult.status === 'rejected') {
             console.error('Error fetching POTA status data:', statusResult.reason);
         }
@@ -424,7 +434,7 @@ class OSM4Leaflet extends L.Layer {
                 center = bounds.getCenter();
             }
 
-            const name = features[0].properties.tags.name || 'Unnamed';
+            const name = getPotaOfficialName(potaId) || features[0].properties.tags.name || 'Unnamed';
             const isUnmapped = features[0].properties.tags['unmapped_osm'] === 'true';
             const statusSummary = getPotaStatusSummary(potaId);
 
@@ -585,8 +595,8 @@ const osmLayer = new OSM4Leaflet({
     baseLayerOptions: {
         style: getPotaFeatureStyle,
         onEachFeature: function(feature, layer) {
-            const name = feature.properties.tags.name || 'Unnamed';
             const potaId = getPotaIdFromFeature(feature);
+            const name = getPotaOfficialName(potaId) || feature.properties.tags.name || 'Unnamed';
             if (potaId) {
                 const popupContent = `<div class="pota-osm-popup"><b>${escapeHtml(name)}</b><br>POTA-ID: <a href="https://pota.app/#/park/${encodeURIComponent(potaId)}" target="_blank" rel="noopener noreferrer">${escapeHtml(potaId)}</a>${getPotaStatusMarkup(potaId)}</div>`;
                 layer.bindPopup(popupContent);

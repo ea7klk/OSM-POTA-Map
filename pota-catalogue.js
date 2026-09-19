@@ -240,9 +240,14 @@ class PotaCatalogueService {
         const inactive = parkCache.value
             .filter(park => park.active === false)
             .map(park => normalizePotaReference(park.reference));
+        const names = Object.fromEntries(parkCache.value.map(park => [
+            normalizePotaReference(park.reference),
+            park.name
+        ]));
 
         return {
             inactive,
+            names,
             metadata: {
                 csvUpdatedAt: new Date(parkCache.fetchedAt).toISOString(),
                 stale: Boolean(parkCache.lastError)
