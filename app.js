@@ -208,16 +208,22 @@ class OSM4Leaflet extends L.Layer {
         if (statusResult.status === 'fulfilled' && statusResult.value && Array.isArray(statusResult.value.inactive)) {
             potaStatus = new Map(statusResult.value.inactive
                 .map(reference => [normalizePotaReference(reference), { active: false }]));
-            potaNames = new Map(Object.entries(statusResult.value.names || {})
-                .map(([reference, name]) => [normalizePotaReference(reference), String(name)]));
         } else if (statusResult.status === 'rejected') {
             console.error('Error fetching POTA status data:', statusResult.reason);
         }
         let osmReferences = new Set();
         let osmError = null;
         if (osmResult.status === 'fulfilled' && osmResult.value && Array.isArray(osmResult.value.elements)) {
-            this.addData(osmResult.value);
             osmReferences = collectPotaRefsFromResponse(osmResult.value);
+            const namesResult = await Promise.allSettled([this.fetchNamesData(osmReferences)]);
+            if (namesResult[0].status === 'fulfilled' && namesResult[0].value) {
+                potaNames = new Map(Object.entries(namesResult[0].value.names || {})
+                    .map(([reference, name]) => [normalizePotaReference(reference), String(name)]));
+            } else {
+                potaNames = new Map();
+                console.error('Error fetching POTA name data:', namesResult[0].reason);
+            }
+            this.addData(osmResult.value);
         } else {
             osmError = 'OSM POTA features could not be loaded.';
         }
@@ -317,6 +323,20 @@ class OSM4Leaflet extends L.Layer {
             this.statusRequest = null;
         });
         return this.statusRequest;
+    }
+
+    async fetchNamesData(references) {
+        const namesUrl = new URL(window.POTA_NAMES_URL || '/api/pota/names', window.location.href);
+        namesUrl.searchParams.set('references', [...references].join(','));
+        const response = await fetch(namesUrl, {
+            headers: { Accept: 'application/json' },
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            const details = await response.json().catch(() => ({}));
+            throw new Error(details.error || `HTTP error! status: ${response.status}`);
+        }
+        return response.json();
     }
 
     showErrorPopup(message = 'The selected area is too large. Please zoom in.') {

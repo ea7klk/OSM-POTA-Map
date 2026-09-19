@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const port = 3000;
-const { PotaCatalogueService } = require('./pota-catalogue');
+const { PotaCatalogueService, normalizePotaReference } = require('./pota-catalogue');
 const { MAX_BBOX_AREA_KM2, bboxAreaKm2, parseBounds } = require('./bbox-limits');
 
 // Matomo configuration
@@ -61,6 +61,25 @@ app.get('/api/pota/status', async (req, res) => {
     }
 });
 
+app.get('/api/pota/names', async (req, res) => {
+    const references = String(req.query.references || '')
+        .split(',')
+        .map(normalizePotaReference)
+        .filter(Boolean);
+    if (references.length > 1000) {
+        return res.status(400).json({ error: 'Request at most 1,000 POTA references at a time.' });
+    }
+
+    try {
+        const names = await potaCatalogue.getPotaNames(references);
+        res.set('Cache-Control', 'private, max-age=300');
+        return res.json(names);
+    } catch (error) {
+        console.error(`Unable to load POTA name data: ${error.message}`);
+        return res.status(503).json({ error: 'The POTA name data is temporarily unavailable.' });
+    }
+});
+
 app.get('/config.js', (req, res) => {
     res.set('Content-Type', 'application/javascript');
     res.send(`
@@ -70,6 +89,7 @@ app.get('/config.js', (req, res) => {
         window.OVERPASS_URL = '${OVERPASS_URL}';
         window.POTA_CATALOGUE_URL = '/api/pota/unmapped';
         window.POTA_STATUS_URL = '/api/pota/status';
+        window.POTA_NAMES_URL = '/api/pota/names';
     `);
 });
 
