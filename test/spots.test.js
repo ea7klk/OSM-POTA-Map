@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
 const {
     buildActivatorProfileUrl,
     buildParkUrl,
@@ -46,4 +48,14 @@ test('formats the elapsed time since a spot was seen', () => {
 test('builds links for activator profiles and POTA references', () => {
     assert.equal(buildActivatorProfileUrl('EA7/KL?'), 'https://pota.app/#/profile/EA7%2FKL%3F');
     assert.equal(buildParkUrl('ES-0016'), 'https://pota.app/#/park/ES-0016');
+});
+
+test('keeps helper names scoped so app.js can import the browser API safely', () => {
+    const source = fs.readFileSync(require.resolve('../spots'), 'utf8');
+    const context = vm.createContext({ window: {} });
+
+    vm.runInContext(source, context);
+    assert.ok(context.window.POTAMAP_SPOTS);
+    assert.equal(context.buildActivatorProfileUrl, undefined);
+    assert.equal(context.buildParkUrl, undefined);
 });
