@@ -17,6 +17,9 @@ OSM POTA reference.
   with the complete OSM reference index. Only active parks whose references are
   absent from OSM are returned, using the coordinates in the CSV. The map links
   to OSM so contributors can add the missing reference.
+- **Current POTA spots:** A blue antenna layer shows spots in the current map
+  view. The collapsible **POTA Spots** panel lists all current spots, newest
+  first; clicking a reference centers the map on that spot at zoom level 9.
 - Overpass clusters use a green style. Inactive OSM parks use muted gray or
   amber styling, while unmapped catalogue markers and their clusters use a red
   style in a separate Leaflet layer. The catalogue remains visible at every

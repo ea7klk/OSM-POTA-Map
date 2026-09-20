@@ -96,6 +96,212 @@ header h1 {
     text-align: center;
 }
 
+.pota-spot-marker {
+    background: transparent;
+    border: 0;
+}
+
+.pota-spot-icon {
+    align-items: center;
+    color: #1565c0;
+    display: flex;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+    height: 38px;
+    justify-content: center;
+    position: relative;
+    width: 38px;
+}
+
+.pota-spot-icon .material-icons {
+    font-size: 28px;
+    position: relative;
+    z-index: 2;
+}
+
+.pota-spot-wave {
+    border: 2px solid #42a5f5;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 50%;
+    height: 22px;
+    opacity: 0;
+    position: absolute;
+    right: -1px;
+    top: 1px;
+    transform: rotate(-45deg) scale(0.35);
+    width: 22px;
+    animation: pota-spot-wave 1.8s ease-out infinite;
+}
+
+.pota-spot-wave-2 {
+    animation-delay: 0.9s;
+}
+
+@keyframes pota-spot-wave {
+    0% {
+        opacity: 0.85;
+        transform: rotate(-45deg) scale(0.35);
+    }
+    70%, 100% {
+        opacity: 0;
+        transform: rotate(-45deg) scale(1.25);
+    }
+}
+
+.pota-spot-popup {
+    line-height: 1.45;
+    max-width: 280px;
+}
+
+.pota-spots-panel {
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    max-height: calc(100vh - 8rem);
+    overflow: hidden;
+    width: min(310px, calc(100vw - 1.5rem));
+}
+
+.pota-spots-panel-toggle {
+    align-items: center;
+    background: #1565c0;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    font-size: 0.95rem;
+    font-weight: 700;
+    justify-content: space-between;
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    width: 100%;
+}
+
+.pota-spots-panel-toggle:hover,
+.pota-spots-panel-toggle:focus-visible {
+    background: #0d47a1;
+}
+
+.pota-spots-panel-toggle-icon {
+    font-size: 1.25rem;
+}
+
+.pota-spots-panel-content {
+    max-height: calc(100vh - 11rem);
+    overflow: auto;
+}
+
+.pota-spots-panel.is-collapsed .pota-spots-panel-content {
+    display: none;
+}
+
+.pota-spots-panel-status {
+    color: #424242;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.55rem;
+}
+
+.pota-spots-table-header {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, 1fr) minmax(0, 1.65fr);
+    gap: 0.4rem;
+    padding: 0.35rem 0.55rem;
+}
+
+.pota-spots-table-header {
+    background: #e3f2fd;
+    border-bottom: 1px solid #90caf9;
+    color: #0d47a1;
+    font-size: 0.7rem;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.pota-spots-row {
+    border-bottom: 1px solid #eeeeee;
+    padding: 0.35rem 0.55rem;
+}
+
+.pota-spots-row-line {
+    align-items: center;
+    display: flex;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.pota-spots-row-seen {
+    justify-content: space-between;
+}
+
+.pota-spots-row-name {
+    align-items: flex-start;
+    margin-top: 0.18rem;
+}
+
+.pota-spots-row-details {
+    color: #424242;
+    font-size: 0.68rem;
+    flex-wrap: wrap;
+    margin-top: 0.18rem;
+}
+
+.pota-spots-name,
+.pota-spots-reference-cell,
+.pota-spots-field {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+}
+
+.pota-spots-name {
+    font-size: 0.73rem;
+    font-weight: 700;
+}
+
+.pota-spots-reference-cell,
+.pota-spots-field {
+    font-size: 0.68rem;
+}
+
+.pota-spots-field {
+    flex: 1 1 auto;
+}
+
+.pota-spots-field b {
+    color: #1565c0;
+    font-weight: 700;
+}
+
+.pota-spots-row:nth-child(even) {
+    background: #fafafa;
+}
+
+.pota-spots-reference {
+    background: transparent;
+    border: 0;
+    color: #1565c0;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.pota-spots-reference:hover,
+.pota-spots-reference:focus-visible {
+    color: #0d47a1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pota-spot-wave {
+        animation: none;
+        opacity: 0.65;
+        transform: rotate(-45deg) scale(0.8);
+    }
+}
+
 .pota-status-inactive,
 .pota-status-mixed {
     display: inline-block;
@@ -176,6 +382,60 @@ header h1 {
     background: #b71c1c;
 }
 
+.pota-layer-visibility {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.35);
+    color: #263238;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.35rem 0.45rem;
+    width: 8.6rem;
+}
+
+.pota-layer-visibility-title {
+    color: #0d47a1;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.pota-layer-visibility-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.pota-layer-visibility-actions button {
+    background: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 3px;
+    color: #0d47a1;
+    cursor: pointer;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.3;
+    padding: 0.1rem 0.35rem;
+}
+
+.pota-layer-visibility-actions button:hover,
+.pota-layer-visibility-actions button:focus-visible {
+    background: #bbdefb;
+}
+
+.pota-layer-visibility label {
+    align-items: center;
+    display: flex;
+    font-size: 0.68rem;
+    gap: 0.3rem;
+    line-height: 1.15;
+}
+
+.pota-layer-visibility input {
+    accent-color: #1565c0;
+    margin: 0;
+}
+
 footer {
     font-size: 0.8rem;
     overflow-wrap: break-word;
@@ -197,6 +457,14 @@ footer p {
 }
 
 @media screen and (max-width: 768px) {
+    .pota-spots-panel {
+        max-height: calc(100vh - 6rem);
+    }
+
+    .pota-spots-panel-content {
+        max-height: calc(100vh - 9rem);
+    }
+
     footer {
         font-size: 0.7rem;
         min-height: 2.6em;
