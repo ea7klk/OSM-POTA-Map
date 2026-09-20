@@ -87,9 +87,9 @@ app.get('/config.js', (req, res) => {
         window.MATOMO_URL = '${MATOMO_URL}';
         window.MATOMO_SITE_ID = '${MATOMO_SITE_ID}';
         window.OVERPASS_URL = '${OVERPASS_URL}';
-        window.POTA_CATALOGUE_URL = '/api/pota/unmapped';
+        window.POTA_CATALOGUE_URL = 'https://api.spainip.es/v1/pota/unmapped';
         window.POTA_STATUS_URL = '/api/pota/status';
-        window.POTA_NAMES_URL = '/api/pota/names';
+        window.POTA_NAMES_URL = 'https://api.spainip.es//v1/pota/names';
     `);
 });
 
