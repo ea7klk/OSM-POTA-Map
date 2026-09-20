@@ -7,7 +7,8 @@ const {
     buildParkUrl,
     buildSpotsRequestUrl,
     formatSpotLastSeen,
-    parseSpotTime
+    parseSpotTime,
+    sortSpotFeaturesByNewest
 } = require('../spots');
 
 test('builds a spots API request with the current map bounds', () => {
@@ -43,6 +44,23 @@ test('formats the elapsed time since a spot was seen', () => {
     assert.equal(formatSpotLastSeen('2026-09-20T19:20:25', now), '2 hours ago');
     assert.equal(formatSpotLastSeen('2026-09-18T21:20:25', now), '2 days ago');
     assert.equal(formatSpotLastSeen('not a timestamp', now), 'Unknown');
+});
+
+test('sorts all spot features newest first and puts invalid times last', () => {
+    const features = [
+        { properties: { spotTime: '2026-09-20T21:18:20' } },
+        { properties: { spotTime: 'not a timestamp' } },
+        { properties: { spotTime: '2026-09-20T21:20:25' } },
+        { properties: { spotTime: '2026-09-20T21:20:25' } }
+    ];
+
+    assert.deepEqual(sortSpotFeaturesByNewest(features), [features[2], features[3], features[0], features[1]]);
+    assert.deepEqual(features.map(feature => feature.properties.spotTime), [
+        '2026-09-20T21:18:20',
+        'not a timestamp',
+        '2026-09-20T21:20:25',
+        '2026-09-20T21:20:25'
+    ]);
 });
 
 test('builds links for activator profiles and POTA references', () => {
