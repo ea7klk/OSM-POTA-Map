@@ -4,6 +4,12 @@ link.rel = 'stylesheet';
 link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
 const { MAX_BBOX_AREA_KM2, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
+const {
+    buildActivatorProfileUrl,
+    buildParkUrl,
+    buildSpotsRequestUrl,
+    formatSpotLastSeen
+} = window.POTAMAP_SPOTS;
 let potaStatus = new Map();
 let potaNames = new Map();
 
@@ -566,6 +572,128 @@ function escapeHtml(value) {
     })[character]);
 }
 
+function buildSpotPopup(properties) {
+    const activator = String(properties.activator || '').trim();
+    const reference = String(properties.reference || properties.pota_ref || '').trim();
+    const name = String(properties.name || properties.parkName || 'Unnamed').trim();
+    const activatorMarkup = activator
+        ? `<a href="${buildActivatorProfileUrl(activator)}" target="_blank" rel="noopener noreferrer">${escapeHtml(activator)}</a>`
+        : 'Unknown';
+    const referenceMarkup = reference
+        ? `<a href="${buildParkUrl(reference)}" target="_blank" rel="noopener noreferrer">${escapeHtml(reference)}</a>`
+        : 'Unknown';
+
+    return '<div class="pota-spot-popup">' +
+        `<div><b>Last Seen:</b> ${escapeHtml(formatSpotLastSeen(properties.spotTime))}</div>` +
+        `<div><b>Activator:</b> ${activatorMarkup}</div>` +
+        `<div><b>Mode:</b> ${escapeHtml(properties.mode || 'Unknown')}</div>` +
+        `<div><b>Frequency:</b> ${escapeHtml(properties.frequency || 'Unknown')}</div>` +
+        `<div><b>Reference:</b> ${referenceMarkup}</div>` +
+        `<div><b>Name:</b> ${escapeHtml(name)}</div>` +
+        '</div>';
+}
+
+class PotaSpotsLayer extends L.Layer {
+    constructor(options = {}) {
+        super(options);
+        this.options = L.Util.extend({}, this.options, options);
+        this.layer = L.layerGroup();
+        this.loadRequestId = 0;
+        this.loadTimeout = null;
+        this.refreshTimer = null;
+        this.refreshMs = 60 * 1000;
+    }
+
+    onAdd(map) {
+        this.map = map;
+        if (!map.getPane('potaSpotsPane')) {
+            map.createPane('potaSpotsPane');
+            map.getPane('potaSpotsPane').style.zIndex = 650;
+        }
+        map.addLayer(this.layer);
+        map.on('moveend', this.debouncedLoad, this);
+        this.load();
+        this.refreshTimer = setInterval(() => this.load(), this.refreshMs);
+    }
+
+    onRemove(map) {
+        map.off('moveend', this.debouncedLoad, this);
+        map.removeLayer(this.layer);
+        if (this.loadTimeout) clearTimeout(this.loadTimeout);
+        if (this.refreshTimer) clearInterval(this.refreshTimer);
+        this.loadTimeout = null;
+        this.refreshTimer = null;
+    }
+
+    debouncedLoad() {
+        if (this.loadTimeout) clearTimeout(this.loadTimeout);
+        this.loadTimeout = setTimeout(() => this.load(), 250);
+    }
+
+    async fetchSpotsData(bounds) {
+        const { _southWest, _northEast } = bounds;
+        const url = buildSpotsRequestUrl(window.POTA_SPOTS_URL || 'https://api.spainip.es/v1/pota/spots', {
+            south: _southWest.lat,
+            west: _southWest.lng,
+            north: _northEast.lat,
+            east: _northEast.lng
+        });
+        const response = await fetch(url, {
+            headers: { Accept: 'application/geo+json, application/json' },
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    }
+
+    async load() {
+        if (!this.map) return;
+        const requestId = ++this.loadRequestId;
+        try {
+            const data = await this.fetchSpotsData(this.map.getBounds());
+            if (requestId !== this.loadRequestId) return;
+            this.addData(data);
+        } catch (error) {
+            if (requestId !== this.loadRequestId) return;
+            console.error('Error fetching POTA spots data:', error);
+            this.layer.clearLayers();
+        }
+    }
+
+    addData(data) {
+        this.layer.clearLayers();
+        if (!data || !Array.isArray(data.features)) return;
+
+        data.features.forEach(feature => {
+            const coordinates = feature.geometry && feature.geometry.coordinates;
+            if (!Array.isArray(coordinates) || coordinates.length < 2) return;
+            const [longitude, latitude] = coordinates;
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+
+            const properties = feature.properties || {};
+            const marker = L.marker([latitude, longitude], {
+                pane: 'potaSpotsPane',
+                icon: L.divIcon({
+                    html: '<span class="pota-spot-icon" aria-hidden="true">' +
+                        '<span class="material-icons">settings_input_antenna</span>' +
+                        '<span class="pota-spot-wave pota-spot-wave-1"></span>' +
+                        '<span class="pota-spot-wave pota-spot-wave-2"></span>' +
+                        '</span>',
+                    className: 'pota-spot-marker',
+                    iconSize: [38, 38],
+                    iconAnchor: [19, 19],
+                    popupAnchor: [0, -19]
+                })
+            });
+            marker.bindPopup(buildSpotPopup(properties));
+            marker.on('popupopen', () => marker.setPopupContent(buildSpotPopup(properties)));
+            marker.addTo(this.layer);
+        });
+    }
+}
+
 // Initialize the map
 let initialView = [50, 10]; // Default center of Europe
 let initialZoom = 4; // Default zoom level
@@ -654,9 +782,12 @@ osmLayer.addTo(map);
 
 const potaCatalogueLayer = osmLayer.catalogueLayer;
 potaCatalogueLayer.addTo(map);
+const potaSpotsLayer = new PotaSpotsLayer();
+potaSpotsLayer.addTo(map);
 L.control.layers(null, {
     'OpenStreetMap POTA features': osmLayer,
-    'Active POTA parks not linked in OSM': potaCatalogueLayer
+    'Active POTA parks not linked in OSM': potaCatalogueLayer,
+    'Current POTA spots': potaSpotsLayer
 }, { collapsed: true }).addTo(map);
 
 const statusLegend = L.control({ position: 'topright' });

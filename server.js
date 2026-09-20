@@ -90,6 +90,7 @@ app.get('/config.js', (req, res) => {
         window.POTA_CATALOGUE_URL = 'https://api.spainip.es/v1/pota/unmapped';
         window.POTA_STATUS_URL = '/api/pota/status';
         window.POTA_NAMES_URL = 'https://api.spainip.es//v1/pota/names';
+        window.POTA_SPOTS_URL = 'https://api.spainip.es/v1/pota/spots';
     `);
 });
 

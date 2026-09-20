@@ -96,6 +96,71 @@ header h1 {
     text-align: center;
 }
 
+.pota-spot-marker {
+    background: transparent;
+    border: 0;
+}
+
+.pota-spot-icon {
+    align-items: center;
+    color: #1565c0;
+    display: flex;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+    height: 38px;
+    justify-content: center;
+    position: relative;
+    width: 38px;
+}
+
+.pota-spot-icon .material-icons {
+    font-size: 28px;
+    position: relative;
+    z-index: 2;
+}
+
+.pota-spot-wave {
+    border: 2px solid #42a5f5;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    border-radius: 50%;
+    height: 22px;
+    opacity: 0;
+    position: absolute;
+    right: -1px;
+    top: 1px;
+    transform: rotate(-45deg) scale(0.35);
+    width: 22px;
+    animation: pota-spot-wave 1.8s ease-out infinite;
+}
+
+.pota-spot-wave-2 {
+    animation-delay: 0.9s;
+}
+
+@keyframes pota-spot-wave {
+    0% {
+        opacity: 0.85;
+        transform: rotate(-45deg) scale(0.35);
+    }
+    70%, 100% {
+        opacity: 0;
+        transform: rotate(-45deg) scale(1.25);
+    }
+}
+
+.pota-spot-popup {
+    line-height: 1.45;
+    max-width: 280px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pota-spot-wave {
+        animation: none;
+        opacity: 0.65;
+        transform: rotate(-45deg) scale(0.8);
+    }
+}
+
 .pota-status-inactive,
 .pota-status-mixed {
     display: inline-block;
