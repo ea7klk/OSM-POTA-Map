@@ -3,8 +3,8 @@ name: Docker Build and Push
 on:
   push:
     branches:
+      - 'develop'
       - 'release/**'
-      - 'feature/test-fusio-api'
     tags:
       - 'v*.*'
   workflow_dispatch:
@@ -20,6 +20,10 @@ env:
 
 jobs:
   build:
+    # Only develop, release branches, and version tags may create images.
+    # This also prevents a manual dispatch from a feature/fix branch from
+    # creating or pushing an image.
+    if: github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release/') || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -34,7 +38,7 @@ jobs:
         env:
           VERSION_INPUT: ${{ github.event.inputs.version }}
         run: |
-          if [[ "${GITHUB_REF}" == refs/heads/feature/test-fusio-api ]]; then
+          if [[ "${GITHUB_REF}" == refs/heads/develop ]]; then
             TAG="test"
           elif [[ "${GITHUB_REF}" == refs/heads/release/* ]]; then
             TAG="${GITHUB_REF#refs/heads/release/}"
