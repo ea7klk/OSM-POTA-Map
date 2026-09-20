@@ -153,6 +153,107 @@ header h1 {
     max-width: 280px;
 }
 
+.pota-spots-panel {
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 4px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    max-height: calc(100vh - 8rem);
+    overflow: hidden;
+    width: min(620px, calc(100vw - 1.5rem));
+}
+
+.pota-spots-panel-toggle {
+    align-items: center;
+    background: #1565c0;
+    border: 0;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    font-size: 0.95rem;
+    font-weight: 700;
+    justify-content: space-between;
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    width: 100%;
+}
+
+.pota-spots-panel-toggle:hover,
+.pota-spots-panel-toggle:focus-visible {
+    background: #0d47a1;
+}
+
+.pota-spots-panel-toggle-icon {
+    font-size: 1.25rem;
+}
+
+.pota-spots-panel-content {
+    max-height: calc(100vh - 11rem);
+    overflow: auto;
+}
+
+.pota-spots-panel.is-collapsed .pota-spots-panel-content {
+    display: none;
+}
+
+.pota-spots-panel-status {
+    color: #424242;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.55rem;
+}
+
+.pota-spots-table-header,
+.pota-spots-row {
+    align-items: center;
+    column-gap: 0.45rem;
+    display: grid;
+    grid-template-columns: minmax(5.2rem, 0.8fr) minmax(4.8rem, 0.8fr) minmax(11rem, 2fr) minmax(5.5rem, 0.9fr) minmax(5rem, 0.9fr);
+    min-width: 31rem;
+    padding: 0.35rem 0.55rem;
+}
+
+.pota-spots-table-header {
+    background: #e3f2fd;
+    border-bottom: 1px solid #90caf9;
+    color: #0d47a1;
+    font-size: 0.7rem;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.pota-spots-row {
+    border-bottom: 1px solid #eeeeee;
+    font-size: 0.72rem;
+}
+
+.pota-spots-row > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pota-spots-row:nth-child(even) {
+    background: #fafafa;
+}
+
+.pota-spots-reference {
+    background: transparent;
+    border: 0;
+    color: #1565c0;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.pota-spots-reference:hover,
+.pota-spots-reference:focus-visible {
+    color: #0d47a1;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .pota-spot-wave {
         animation: none;
@@ -262,6 +363,14 @@ footer p {
 }
 
 @media screen and (max-width: 768px) {
+    .pota-spots-panel {
+        max-height: calc(100vh - 6rem);
+    }
+
+    .pota-spots-panel-content {
+        max-height: calc(100vh - 9rem);
+    }
+
     footer {
         font-size: 0.7rem;
         min-height: 2.6em;

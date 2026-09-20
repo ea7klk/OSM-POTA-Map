@@ -8,7 +8,8 @@ const {
     buildActivatorProfileUrl,
     buildParkUrl,
     buildSpotsRequestUrl,
-    formatSpotLastSeen
+    formatSpotLastSeen,
+    sortSpotFeaturesByNewest
 } = window.POTAMAP_SPOTS;
 let potaStatus = new Map();
 let potaNames = new Map();
@@ -694,6 +695,140 @@ class PotaSpotsLayer extends L.Layer {
     }
 }
 
+class PotaSpotsPanel extends L.Control {
+    constructor(options = {}) {
+        super(L.Util.extend({ position: 'topright' }, options));
+        this.features = [];
+        this.loadRequestId = 0;
+        this.refreshTimer = null;
+        this.refreshMs = 60 * 1000;
+        this.isCollapsed = false;
+    }
+
+    onAdd(map) {
+        this.map = map;
+        this.container = L.DomUtil.create('section', 'pota-spots-panel');
+        this.container.setAttribute('aria-label', 'POTA Spots');
+        this.container.innerHTML = '<button type="button" class="pota-spots-panel-toggle" aria-expanded="true">' +
+            '<span class="pota-spots-panel-title">POTA Spots</span>' +
+            '<span class="material-icons pota-spots-panel-toggle-icon" aria-hidden="true">expand_less</span>' +
+            '</button>' +
+            '<div class="pota-spots-panel-content">' +
+            '<div class="pota-spots-panel-status" role="status">Loading current spots…</div>' +
+            '<div class="pota-spots-table-header" role="row">' +
+            '<span>Last seen</span><span>Reference</span><span>Name</span><span>Frequency</span><span>Activator</span>' +
+            '</div>' +
+            '<div class="pota-spots-list" role="rowgroup"></div>' +
+            '</div>';
+
+        this.toggleButton = this.container.querySelector('.pota-spots-panel-toggle');
+        this.toggleIcon = this.container.querySelector('.pota-spots-panel-toggle-icon');
+        this.statusElement = this.container.querySelector('.pota-spots-panel-status');
+        this.listElement = this.container.querySelector('.pota-spots-list');
+
+        L.DomEvent.disableClickPropagation(this.container);
+        L.DomEvent.disableScrollPropagation(this.container);
+        L.DomEvent.on(this.toggleButton, 'click', this.toggle, this);
+        L.DomEvent.on(this.listElement, 'click', this.handleListClick, this);
+
+        this.load();
+        this.refreshTimer = setInterval(() => this.load(), this.refreshMs);
+        return this.container;
+    }
+
+    onRemove() {
+        if (this.refreshTimer) clearInterval(this.refreshTimer);
+        L.DomEvent.off(this.toggleButton, 'click', this.toggle, this);
+        L.DomEvent.off(this.listElement, 'click', this.handleListClick, this);
+        this.refreshTimer = null;
+    }
+
+    toggle() {
+        this.isCollapsed = !this.isCollapsed;
+        this.container.classList.toggle('is-collapsed', this.isCollapsed);
+        this.toggleButton.setAttribute('aria-expanded', String(!this.isCollapsed));
+        this.toggleIcon.textContent = this.isCollapsed ? 'expand_more' : 'expand_less';
+    }
+
+    async fetchAllSpotsData() {
+        return this.fetchSpotsData({
+            south: -90,
+            west: -180,
+            north: 90,
+            east: 180
+        });
+    }
+
+    async fetchSpotsData(bounds) {
+        const url = buildSpotsRequestUrl(window.POTA_SPOTS_URL || 'https://api.spainip.es/v1/pota/spots', bounds);
+        const response = await fetch(url, {
+            headers: { Accept: 'application/geo+json, application/json' },
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            const details = await response.json().catch(() => ({}));
+            throw new Error(details.error || `HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    }
+
+    async load() {
+        const requestId = ++this.loadRequestId;
+        try {
+            const data = await this.fetchAllSpotsData();
+            if (requestId !== this.loadRequestId) return;
+            this.features = sortSpotFeaturesByNewest(data.features);
+            this.render();
+        } catch (error) {
+            if (requestId !== this.loadRequestId) return;
+            this.features = [];
+            this.listElement.innerHTML = '';
+            this.statusElement.textContent = 'Unable to load current POTA spots.';
+            console.error('Error fetching all POTA spots for the panel:', error);
+        }
+    }
+
+    render() {
+        this.statusElement.textContent = `${this.features.length.toLocaleString()} current spots`;
+        this.listElement.innerHTML = this.features.map((feature, index) => {
+            const properties = feature.properties || {};
+            const coordinates = feature.geometry && feature.geometry.coordinates;
+            const reference = String(properties.reference || properties.pota_ref || '').trim();
+            const name = String(properties.name || properties.parkName || 'Unnamed').trim();
+            const activator = String(properties.activator || '').trim();
+            const frequency = String(properties.frequency || 'Unknown').trim();
+            const canCenter = Array.isArray(coordinates) && coordinates.length >= 2 &&
+                Number.isFinite(Number(coordinates[0])) && Number.isFinite(Number(coordinates[1]));
+            const referenceMarkup = reference && canCenter
+                ? `<button type="button" class="pota-spots-reference" data-spot-index="${index}">${escapeHtml(reference)}</button>`
+                : escapeHtml(reference || 'Unknown');
+            const activatorMarkup = activator
+                ? `<a href="${buildActivatorProfileUrl(activator)}" target="_blank" rel="noopener noreferrer">${escapeHtml(activator)}</a>`
+                : 'Unknown';
+            return '<div class="pota-spots-row" role="row">' +
+                `<span title="${escapeHtml(properties.spotTime || '')}">${escapeHtml(formatSpotLastSeen(properties.spotTime))}</span>` +
+                `<span>${referenceMarkup}</span>` +
+                `<span title="${escapeHtml(name)}">${escapeHtml(name)}</span>` +
+                `<span>${escapeHtml(frequency)}</span>` +
+                `<span>${activatorMarkup}</span>` +
+                '</div>';
+        }).join('');
+    }
+
+    handleListClick(event) {
+        const referenceButton = event.target.closest('.pota-spots-reference');
+        if (!referenceButton) return;
+
+        const feature = this.features[Number(referenceButton.dataset.spotIndex)];
+        const coordinates = feature && feature.geometry && feature.geometry.coordinates;
+        if (!Array.isArray(coordinates) || coordinates.length < 2) return;
+
+        const [longitude, latitude] = coordinates.map(Number);
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+        this.map.setView([latitude, longitude], 9);
+    }
+}
+
 // Initialize the map
 let initialView = [50, 10]; // Default center of Europe
 let initialZoom = 4; // Default zoom level
@@ -801,6 +936,9 @@ statusLegend.onAdd = () => {
     return container;
 };
 statusLegend.addTo(map);
+
+const potaSpotsPanel = new PotaSpotsPanel();
+potaSpotsPanel.addTo(map);
 
 // Add locate control
 L.control.locate({

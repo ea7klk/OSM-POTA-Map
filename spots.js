@@ -47,12 +47,24 @@
         return `https://pota.app/#/park/${encodeURIComponent(String(reference || '').trim())}`;
     }
 
+    function sortSpotFeaturesByNewest(features) {
+        return (Array.isArray(features) ? features : []).slice().sort((left, right) => {
+            const leftTime = parseSpotTime(left && left.properties && left.properties.spotTime);
+            const rightTime = parseSpotTime(right && right.properties && right.properties.spotTime);
+            if (leftTime === null && rightTime === null) return 0;
+            if (leftTime === null) return 1;
+            if (rightTime === null) return -1;
+            return rightTime - leftTime;
+        });
+    }
+
     const api = {
         buildActivatorProfileUrl,
         buildParkUrl,
         buildSpotsRequestUrl,
         formatSpotLastSeen,
-        parseSpotTime
+        parseSpotTime,
+        sortSpotFeaturesByNewest
     };
 
     if (moduleObject) {
