@@ -9,6 +9,7 @@ const {
     buildParkUrl,
     buildSpotsRequestUrl,
     formatSpotLastSeen,
+    getSpotDisplayValues,
     sortSpotFeaturesByNewest
 } = window.POTAMAP_SPOTS;
 let potaStatus = new Map();
@@ -702,21 +703,21 @@ class PotaSpotsPanel extends L.Control {
         this.loadRequestId = 0;
         this.refreshTimer = null;
         this.refreshMs = 60 * 1000;
-        this.isCollapsed = false;
+        this.isCollapsed = true;
     }
 
     onAdd(map) {
         this.map = map;
-        this.container = L.DomUtil.create('section', 'pota-spots-panel');
+        this.container = L.DomUtil.create('section', 'pota-spots-panel is-collapsed');
         this.container.setAttribute('aria-label', 'POTA Spots');
-        this.container.innerHTML = '<button type="button" class="pota-spots-panel-toggle" aria-expanded="true">' +
+        this.container.innerHTML = '<button type="button" class="pota-spots-panel-toggle" aria-expanded="false">' +
             '<span class="pota-spots-panel-title">POTA Spots</span>' +
-            '<span class="material-icons pota-spots-panel-toggle-icon" aria-hidden="true">expand_less</span>' +
+            '<span class="material-icons pota-spots-panel-toggle-icon" aria-hidden="true">expand_more</span>' +
             '</button>' +
             '<div class="pota-spots-panel-content">' +
             '<div class="pota-spots-panel-status" role="status">Loading current spots…</div>' +
             '<div class="pota-spots-table-header" role="row">' +
-            '<span>Last seen</span><span>Reference</span><span>Name</span><span>Frequency</span><span>Activator</span>' +
+            '<span>Name / Reference</span><span>Last seen · Mode · Frequency · Activator</span>' +
             '</div>' +
             '<div class="pota-spots-list" role="rowgroup"></div>' +
             '</div>';
@@ -791,12 +792,9 @@ class PotaSpotsPanel extends L.Control {
     render() {
         this.statusElement.textContent = `${this.features.length.toLocaleString()} current spots`;
         this.listElement.innerHTML = this.features.map((feature, index) => {
-            const properties = feature.properties || {};
+            const values = getSpotDisplayValues(feature.properties || {});
             const coordinates = feature.geometry && feature.geometry.coordinates;
-            const reference = String(properties.reference || properties.pota_ref || '').trim();
-            const name = String(properties.name || properties.parkName || 'Unnamed').trim();
-            const activator = String(properties.activator || '').trim();
-            const frequency = String(properties.frequency || 'Unknown').trim();
+            const { reference, name, mode, frequency, activator, spotTime } = values;
             const canCenter = Array.isArray(coordinates) && coordinates.length >= 2 &&
                 Number.isFinite(Number(coordinates[0])) && Number.isFinite(Number(coordinates[1]));
             const referenceMarkup = reference && canCenter
@@ -806,11 +804,16 @@ class PotaSpotsPanel extends L.Control {
                 ? `<a href="${buildActivatorProfileUrl(activator)}" target="_blank" rel="noopener noreferrer">${escapeHtml(activator)}</a>`
                 : 'Unknown';
             return '<div class="pota-spots-row" role="row">' +
-                `<span title="${escapeHtml(properties.spotTime || '')}">${escapeHtml(formatSpotLastSeen(properties.spotTime))}</span>` +
-                `<span>${referenceMarkup}</span>` +
-                `<span title="${escapeHtml(name)}">${escapeHtml(name)}</span>` +
-                `<span>${escapeHtml(frequency)}</span>` +
-                `<span>${activatorMarkup}</span>` +
+                '<div class="pota-spots-row-primary">' +
+                `<span class="pota-spots-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>` +
+                `<span class="pota-spots-reference-cell">${referenceMarkup}</span>` +
+                '</div>' +
+                '<div class="pota-spots-row-secondary">' +
+                `<span class="pota-spots-field" title="${escapeHtml(spotTime)}"><b>Seen</b> ${escapeHtml(formatSpotLastSeen(spotTime))}</span>` +
+                `<span class="pota-spots-field" title="${escapeHtml(mode)}"><b>Mode</b> ${escapeHtml(mode)}</span>` +
+                `<span class="pota-spots-field" title="${escapeHtml(frequency)}"><b>Freq</b> ${escapeHtml(frequency)}</span>` +
+                `<span class="pota-spots-field" title="${escapeHtml(activator || 'Unknown')}"><b>Act</b> ${activatorMarkup}</span>` +
+                '</div>' +
                 '</div>';
         }).join('');
     }

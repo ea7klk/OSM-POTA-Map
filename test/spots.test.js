@@ -7,6 +7,7 @@ const {
     buildParkUrl,
     buildSpotsRequestUrl,
     formatSpotLastSeen,
+    getSpotDisplayValues,
     parseSpotTime,
     sortSpotFeaturesByNewest
 } = require('../spots');
@@ -61,6 +62,24 @@ test('sorts all spot features newest first and puts invalid times last', () => {
         '2026-09-20T21:20:25',
         '2026-09-20T21:20:25'
     ]);
+});
+
+test('normalizes all fields displayed in the spots panel, including mode', () => {
+    assert.deepEqual(getSpotDisplayValues({
+        spotTime: '2026-09-20T21:20:25',
+        pota_ref: 'ES-0016',
+        parkName: 'Sierra de Hornachuelos Nature Park',
+        mode: 'SSB',
+        frequency: '14.250',
+        activator: 'EA7KLK'
+    }), {
+        spotTime: '2026-09-20T21:20:25',
+        reference: 'ES-0016',
+        name: 'Sierra de Hornachuelos Nature Park',
+        mode: 'SSB',
+        frequency: '14.250',
+        activator: 'EA7KLK'
+    });
 });
 
 test('builds links for activator profiles and POTA references', () => {

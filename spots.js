@@ -47,6 +47,17 @@
         return `https://pota.app/#/park/${encodeURIComponent(String(reference || '').trim())}`;
     }
 
+    function getSpotDisplayValues(properties = {}) {
+        return {
+            spotTime: String(properties.spotTime || '').trim(),
+            reference: String(properties.reference || properties.pota_ref || '').trim(),
+            name: String(properties.name || properties.parkName || 'Unnamed').trim(),
+            mode: String(properties.mode || 'Unknown').trim(),
+            frequency: String(properties.frequency || 'Unknown').trim(),
+            activator: String(properties.activator || '').trim()
+        };
+    }
+
     function sortSpotFeaturesByNewest(features) {
         return (Array.isArray(features) ? features : []).slice().sort((left, right) => {
             const leftTime = parseSpotTime(left && left.properties && left.properties.spotTime);
@@ -63,6 +74,7 @@
         buildParkUrl,
         buildSpotsRequestUrl,
         formatSpotLastSeen,
+        getSpotDisplayValues,
         parseSpotTime,
         sortSpotFeaturesByNewest
     };
