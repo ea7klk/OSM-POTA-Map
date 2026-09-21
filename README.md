@@ -38,20 +38,24 @@ take longer to download and render.
 
 ## Run locally
 
-Requirements: Node.js 22 or later.
+Requirements: Node.js 22 or later for tests and guide generation.
 
 ```sh
 npm ci
-npm start
+npm test
 ```
 
-Open <http://localhost:3000>. To build and run the same Node.js application in
-a container:
+The production container is a static Nginx image. To build and run it locally:
 
 ```sh
 docker build -t osm-pota-map .
-docker run --rm -p 3000:3000 osm-pota-map
+docker run --rm -p 3000:80 osm-pota-map
 ```
+
+The image uses a Node.js build stage to safely optimize HTML and CSS and create
+precompressed assets. The serving image contains only Nginx. Runtime API and
+Matomo settings are written to `config.js` by the Nginx entrypoint, so the same
+image can be configured separately for test and production.
 
 ## Configuration
 

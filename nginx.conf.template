@@ -1,14 +1,33 @@
 server {
     listen 80;
-    server_name localhost;
+    server_name _;
     root /usr/share/nginx/html;
+    index index.html;
+
+    gzip on;
+    gzip_static on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+
+    location = /config.js {
+        add_header Cache-Control "no-store";
+        try_files $uri =404;
+    }
+
+    # Preserve the old application's 404 behaviour for removed local APIs.
+    location ^~ /api/ {
+        return 404;
+    }
+
+    location ~* \.(?:js|css|png|jpg|jpeg|gif|webp|ico|svg|woff2?)$ {
+        expires 1h;
+        add_header Cache-Control "public, max-age=3600";
+        try_files $uri =404;
+    }
 
     location / {
         try_files $uri $uri/ /index.html;
-        sub_filter_once off;
-        sub_filter 'MATOMO_URL' '${MATOMO_URL}';
-        sub_filter 'MATOMO_SITE_ID' '${MATOMO_SITE_ID}';
     }
-
-    error_page 404 /index.html;
 }
