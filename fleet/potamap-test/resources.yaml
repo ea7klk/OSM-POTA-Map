@@ -20,12 +20,10 @@ spec:
         - name: potamap-test
           image: ghcr.io/ea7klk/osm-pota-map:test
           imagePullPolicy: Always
-          command: ["docker-entrypoint.sh"]
-          args: ["node", "server.js"]
-          workingDir: /app
+          workingDir: /usr/share/nginx/html
           ports:
             - name: http
-              containerPort: 3000
+              containerPort: 80
           env:
             - name: OVERPASS_URL
               value: https://api.spainip.es/v1/overpass/interpreter
@@ -60,7 +58,7 @@ spec:
     app.kubernetes.io/name: potamap-test
   ports:
     - name: http
-      port: 3000
+      port: 80
       targetPort: http
 ---
 apiVersion: traefik.io/v1alpha1
@@ -76,6 +74,6 @@ spec:
       match: Host(`potamap.test.ea7klk.es`)
       services:
         - name: potamap-test
-          port: 3000
+          port: 80
   tls:
     certResolver: acmeresolver

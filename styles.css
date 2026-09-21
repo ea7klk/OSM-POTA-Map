@@ -96,6 +96,45 @@ header h1 {
     text-align: center;
 }
 
+.pota-status {
+    border-radius: 0.25rem;
+    display: block;
+    margin-top: 0.45rem;
+    padding: 0.35rem 0.5rem;
+    text-align: left;
+}
+
+.pota-status-inactive {
+    background: #eeeeee;
+    border: 2px solid #757575;
+    color: #212121;
+}
+
+.pota-status-mixed {
+    background: #fff3cd;
+    border: 2px solid #a66b00;
+    color: #6b4f00;
+}
+
+.pota-inactive-logo {
+    opacity: 0.9;
+}
+
+.pota-inactive-marker {
+    background: transparent;
+    border: 0;
+}
+
+.pota-inactive-icon {
+    color: #757575;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+    font-size: 30px;
+}
+
+.pota-inactive-marker-mixed .pota-inactive-icon {
+    color: #a66b00;
+}
+
 .pota-spot-marker {
     background: transparent;
     border: 0;
@@ -334,6 +373,10 @@ header h1 {
 
 .pota-legend-unmapped {
     background: #b71c1c;
+}
+
+.pota-legend-inactive {
+    background: #757575;
 }
 
 .pota-layer-visibility {
