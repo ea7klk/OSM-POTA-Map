@@ -22,8 +22,11 @@ test('normalizes numeric and boolean active values and applies inactive styling'
     assert.match(appSource, /normalizePotaActive\(status && typeof status === 'object' \? status\.active : status\)/);
     assert.match(appSource, /if \(summary === 'inactive'\) return '#757575'/);
     assert.match(appSource, /fillOpacity: summary === 'inactive' \? 0\.22 : 0\.3/);
-    assert.match(appSource, /Currently inactive in the POTA catalogue/);
+    assert.match(appSource, /POTA status: INACTIVE/);
+    assert.match(appSource, /iconUrl: 'pota-logo-38x38\.png'/);
+    assert.doesNotMatch(appSource, /iconName = statusSummary === 'inactive' \? 'pause_circle'/);
     assert.match(stylesSource, /\.pota-legend-inactive/);
+    assert.match(stylesSource, /\.pota-status-inactive/);
     assert.match(stylesSource, /\.pota-inactive-icon/);
 });
 
