@@ -20,8 +20,9 @@ runtime configuration.
 - Overpass clusters use a green style, while unmapped catalogue markers and
   their clusters use a red style in a separate Leaflet layer. The catalogue
   remains visible at every zoom level while the current bounding box is within
-  the query limit. OSM results always take precedence, including when the
-  matching OSM park is outside the current map view.
+  the query limit. The external unmapped endpoint already excludes references
+  that are mapped in OSM, so the client renders its response without another
+  deduplication pass.
 
 The browser requests official POTA names for references in the current OSM view,
 active unmapped parks for the current map bounds, and current spots directly
