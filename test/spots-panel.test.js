@@ -45,3 +45,10 @@ test('places the status legend below the Show control', () => {
     assert.match(appSource, /L\.control\(\{ position: 'topleft' \}\)/);
     assert.match(appSource, /visibilityControl\.addTo\(map\);[\s\S]*statusLegend\.addTo\(map\);/);
 });
+
+test('normalizes Leaflet map bounds for Overpass, catalogue, and spots requests', () => {
+    assert.match(appSource, /normalizeBounds\(\{[\s\S]*south: bounds\.getSouth\(\)/);
+    assert.match(appSource, /const bounds = getMapRequestBounds\(this\.map\);/);
+    assert.match(appSource, /nwr\["communication:amateur_radio:pota"\]\(\$\{bounds\.south\},\$\{bounds\.west\},\$\{bounds\.north\},\$\{bounds\.east\}\)/);
+    assert.doesNotMatch(appSource, /_southWest\.lng|_northEast\.lng|_southWest\.lat|_northEast\.lat/);
+});
