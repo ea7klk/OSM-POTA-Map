@@ -26,3 +26,22 @@ test('provides compact all/none visibility controls for every API-backed layer',
     assert.match(appSource, /const shouldLoadUnmapped = potaLayerSelection\.unmapped/);
     assert.match(appSource, /if \(!this\.isVisible\) return;/);
 });
+
+test('persists the Show-window selection and restores it on reload', () => {
+    assert.match(appSource, /const POTA_LAYER_SELECTION_COOKIE = 'potaLayerSelection'/);
+    assert.match(appSource, /loadPotaLayerSelection\(\);/);
+    assert.match(appSource, /JSON\.parse\(decodeURIComponent\(savedSelection\)\)/);
+    assert.match(appSource, /encodeURIComponent\(JSON\.stringify\(potaLayerSelection\)\)/);
+    assert.match(appSource, /savePotaLayerSelection\(\);/);
+    assert.match(appSource, /this\.isVisible = potaLayerSelection\.spots/);
+});
+
+test('refreshes both POTA Spots views every 30 seconds', () => {
+    assert.equal((appSource.match(/this\.refreshMs = 30 \* 1000/g) || []).length, 2);
+    assert.doesNotMatch(appSource, /this\.refreshMs = 60 \* 1000/);
+});
+
+test('places the status legend below the Show control', () => {
+    assert.match(appSource, /L\.control\(\{ position: 'topleft' \}\)/);
+    assert.match(appSource, /visibilityControl\.addTo\(map\);[\s\S]*statusLegend\.addTo\(map\);/);
+});

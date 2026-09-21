@@ -19,6 +19,7 @@ const potaLayerSelection = {
     unmapped: true,
     spots: true
 };
+const POTA_LAYER_SELECTION_COOKIE = 'potaLayerSelection';
 
 function normalizePotaReference(value) {
     return String(value || '').trim().toUpperCase();
@@ -643,8 +644,8 @@ class PotaSpotsLayer extends L.Layer {
         this.loadRequestId = 0;
         this.loadTimeout = null;
         this.refreshTimer = null;
-        this.refreshMs = 60 * 1000;
-        this.isVisible = true;
+        this.refreshMs = 30 * 1000;
+        this.isVisible = potaLayerSelection.spots;
     }
 
     onAdd(map) {
@@ -754,9 +755,9 @@ class PotaSpotsPanel extends L.Control {
         this.features = [];
         this.loadRequestId = 0;
         this.refreshTimer = null;
-        this.refreshMs = 60 * 1000;
+        this.refreshMs = 30 * 1000;
         this.isCollapsed = true;
-        this.isVisible = true;
+        this.isVisible = potaLayerSelection.spots;
     }
 
     onAdd(map) {
@@ -920,9 +921,9 @@ class PotaLayerVisibilityControl extends L.Control {
             '<button type="button" data-visibility-action="all">All</button>' +
             '<button type="button" data-visibility-action="none">None</button>' +
             '</div>' +
-            '<label><input type="checkbox" data-visibility-layer="mapped" checked>Mapped parks</label>' +
-            '<label><input type="checkbox" data-visibility-layer="unmapped" checked>Unmapped parks</label>' +
-            '<label><input type="checkbox" data-visibility-layer="spots" checked>Spots</label>';
+            `<label><input type="checkbox" data-visibility-layer="mapped"${potaLayerSelection.mapped ? ' checked' : ''}>Mapped parks</label>` +
+            `<label><input type="checkbox" data-visibility-layer="unmapped"${potaLayerSelection.unmapped ? ' checked' : ''}>Unmapped parks</label>` +
+            `<label><input type="checkbox" data-visibility-layer="spots"${potaLayerSelection.spots ? ' checked' : ''}>Spots</label>`;
         L.DomEvent.disableClickPropagation(this.container);
         L.DomEvent.disableScrollPropagation(this.container);
         L.DomEvent.on(this.container, 'change', this.handleChange, this);
@@ -960,6 +961,7 @@ class PotaLayerVisibilityControl extends L.Control {
         const input = event.target.closest('[data-visibility-layer]');
         if (!input) return;
         potaLayerSelection[input.dataset.visibilityLayer] = input.checked;
+        savePotaLayerSelection();
         this.emitSelectionChange();
     }
 
@@ -972,6 +974,7 @@ class PotaLayerVisibilityControl extends L.Control {
             const input = this.container.querySelector(`[data-visibility-layer="${layerName}"]`);
             if (input) input.checked = value;
         });
+        savePotaLayerSelection();
         this.emitSelectionChange();
     }
 }
@@ -994,6 +997,32 @@ function setCookie(name, value, days) {
     const expires = `expires=${date.toUTCString()}`;
     document.cookie = `${name}=${value};${expires};path=/`;
 }
+
+function loadPotaLayerSelection() {
+    const savedSelection = getCookie(POTA_LAYER_SELECTION_COOKIE);
+    if (!savedSelection) return;
+
+    try {
+        const parsedSelection = JSON.parse(decodeURIComponent(savedSelection));
+        Object.keys(potaLayerSelection).forEach(layerName => {
+            if (typeof parsedSelection[layerName] === 'boolean') {
+                potaLayerSelection[layerName] = parsedSelection[layerName];
+            }
+        });
+    } catch (error) {
+        console.warn('Ignoring invalid saved POTA layer selection:', error);
+    }
+}
+
+function savePotaLayerSelection() {
+    setCookie(
+        POTA_LAYER_SELECTION_COOKIE,
+        encodeURIComponent(JSON.stringify(potaLayerSelection)),
+        30
+    );
+}
+
+loadPotaLayerSelection();
 
 // Check if there's a saved location in cookies
 const savedView = getCookie('mapView');
@@ -1070,7 +1099,7 @@ potaSpotsLayer.addTo(map);
 const potaSpotsPanel = new PotaSpotsPanel();
 potaSpotsPanel.addTo(map);
 
-const statusLegend = L.control({ position: 'topright' });
+const statusLegend = L.control({ position: 'topleft' });
 statusLegend.onAdd = () => {
     const container = L.DomUtil.create('div', 'pota-status-legend');
     container.innerHTML = '<b>POTA status</b>' +
@@ -1080,7 +1109,6 @@ statusLegend.onAdd = () => {
     L.DomEvent.disableClickPropagation(container);
     return container;
 };
-statusLegend.addTo(map);
 
 const visibilityControl = new PotaLayerVisibilityControl();
 visibilityControl.addTo(map);
@@ -1089,6 +1117,7 @@ visibilityControl.onSelectionChange = selection => {
     potaSpotsLayer.setVisible(selection.spots);
     potaSpotsPanel.setVisible(selection.spots);
 };
+statusLegend.addTo(map);
 
 // Add locate control
 L.control.locate({
