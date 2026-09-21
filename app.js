@@ -499,6 +499,7 @@ class OSM4Leaflet extends L.Layer {
             const name = getPotaOfficialName(potaId) || features[0].properties.tags.name || 'Unnamed';
             const isUnmapped = features[0].properties.tags['unmapped_osm'] === 'true';
             let popupContent = `<div class="pota-osm-popup"><b>${escapeHtml(name)}</b><br>POTA-ID: <a href="https://pota.app/#/park/${encodeURIComponent(potaId)}" target="_blank" rel="noopener noreferrer">${escapeHtml(potaId)}</a>`;
+            popupContent += getPotaStatusMarkup(potaId);
             if (isUnmapped) {
                 popupContent += `<br>This POTA reference hasn't been mapped on OpenStreetMap yet. You can contribute by editing the map on <a href="https://www.openstreetmap.org/query?lat=${center.lat}&lon=${center.lng}" target="_blank">openstreetmap.org</a> and adding the tag <b>communication:amateur_radio:pota=${potaId}</b> to the top-level relation for the reference.`;
             }
@@ -519,10 +520,10 @@ class OSM4Leaflet extends L.Layer {
             } else if (getPotaStatusSummary(potaId) === 'inactive') {
                 marker = L.marker(center, {
                     icon: L.icon({
-                        iconUrl: 'pota-logo-38x38.png',
-                        iconSize: [38, 38],
-                        iconAnchor: [19, 38],
-                        popupAnchor: [0, -38],
+                        iconUrl: 'pota_marker_inactive.png',
+                        iconSize: [41, 41],
+                        iconAnchor: [20, 41],
+                        popupAnchor: [0, -41],
                         className: 'pota-inactive-logo'
                     })
                 });

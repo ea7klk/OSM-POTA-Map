@@ -16,6 +16,7 @@ const rootFiles = [
   'styles.css',
   'pota-logo-38x38.png',
   'pota_marker.png',
+  'pota_marker_inactive.png',
 ];
 const directories = ['help', 'docs/images'];
 const compressibleExtensions = new Set(['.html', '.css', '.js', '.json', '.svg', '.txt']);

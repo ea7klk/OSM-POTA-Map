@@ -23,7 +23,8 @@ test('normalizes numeric and boolean active values and applies inactive styling'
     assert.match(appSource, /if \(summary === 'inactive'\) return '#757575'/);
     assert.match(appSource, /fillOpacity: summary === 'inactive' \? 0\.22 : 0\.3/);
     assert.match(appSource, /POTA status: INACTIVE/);
-    assert.match(appSource, /iconUrl: 'pota-logo-38x38\.png'/);
+    assert.match(appSource, /iconUrl: 'pota_marker_inactive\.png'/);
+    assert.match(appSource, /popupContent \+= getPotaStatusMarkup\(potaId\)/);
     assert.doesNotMatch(appSource, /iconName = statusSummary === 'inactive' \? 'pause_circle'/);
     assert.match(stylesSource, /\.pota-legend-inactive/);
     assert.match(stylesSource, /\.pota-status-inactive/);
@@ -34,4 +35,8 @@ test('exposes the status endpoint through the static image configuration', () =>
     assert.match(dockerfile, /ENV POTA_STATUS_URL=https:\/\/api\.spainip\.es\/v1\/pota\/status/);
     assert.match(configTemplate, /window\.POTA_STATUS_URL = '\$\{POTA_STATUS_URL\}'/);
     assert.match(entrypoint, /POTA_STATUS_URL/);
+});
+
+test('includes the inactive marker in the static build', () => {
+    assert.match(fs.readFileSync(`${root}/scripts/build_static.js`, 'utf8'), /'pota_marker_inactive\.png'/);
 });
