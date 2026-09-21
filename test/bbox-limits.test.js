@@ -6,6 +6,7 @@ const {
     MAX_BBOX_AREA_KM2,
     bboxAreaKm2,
     normalizeBounds,
+    normalizeLongitude,
     parseBounds
 } = require('../bbox-limits');
 
@@ -59,6 +60,11 @@ test('normalizes map bounds before sending them to APIs', () => {
         north: 90,
         east: -179
     });
+});
+
+test('wraps map centers into the visible longitude world', () => {
+    assert.equal(normalizeLongitude(395.2056884765625), 35.2056884765625);
+    assert.equal(normalizeLongitude(-395.2056884765625), -35.2056884765625);
 });
 
 test('rejects map bounds with non-numeric coordinates or inverted latitude', () => {
