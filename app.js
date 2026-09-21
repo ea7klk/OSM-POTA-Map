@@ -17,7 +17,6 @@ const {
     getSpotDisplayValues,
     sortSpotFeaturesByNewest
 } = window.POTAMAP_SPOTS;
-let potaStatus = new Map();
 let potaNames = new Map();
 const potaLayerSelection = {
     mapped: true,
@@ -65,50 +64,14 @@ function getPotaReferencesFromFeature(feature) {
     return [...references];
 }
 
-function getPotaStatusSummary(value) {
-    const references = Array.isArray(value) ? value : splitPotaReferences(value);
-    let hasActive = false;
-    let hasInactive = false;
-    references.forEach(reference => {
-        const status = potaStatus.get(normalizePotaReference(reference));
-        if (!status || typeof status.active !== 'boolean') return;
-        if (status.active) hasActive = true;
-        else hasInactive = true;
-    });
-    if (hasActive && hasInactive) return 'mixed';
-    if (hasInactive) return 'inactive';
-    if (hasActive) return 'active';
-    return 'unknown';
-}
-
-function getPotaStatusColor(summary) {
-    if (summary === 'inactive') return '#757575';
-    if (summary === 'mixed') return '#a66b00';
-    return '#43a047';
-}
-
-function getPotaStatusMarkup(value) {
-    const summary = getPotaStatusSummary(value);
-    if (summary === 'inactive') {
-        return '<br><span class="pota-status pota-status-inactive"><b>Currently inactive in the POTA catalogue.</b></span>' +
-            '<br>This OSM feature is retained because the park may be reactivated in the future.';
-    }
-    if (summary === 'mixed') {
-        return '<br><span class="pota-status pota-status-mixed"><b>Mixed POTA status.</b></span>' +
-            '<br>One or more references on this OSM feature are currently inactive.';
-    }
-    return '';
-}
-
 function getPotaFeatureStyle(feature) {
-    const summary = getPotaStatusSummary(getPotaReferencesFromFeature(feature));
-    const color = getPotaStatusColor(summary);
+    const color = '#43a047';
     return {
         color,
         fillColor: color,
         weight: 4,
         opacity: 0.7,
-        fillOpacity: summary === 'inactive' ? 0.22 : 0.3
+        fillOpacity: 0.3
     };
 }
 
@@ -157,9 +120,6 @@ class OSM4Leaflet extends L.Layer {
         this.errorPopup = null;
         this.loadDataTimeout = null;
         this.loadRequestId = 0;
-        this.statusCache = { value: null, fetchedAt: 0 };
-        this.statusRequest = null;
-        this.statusRefreshMs = 5 * 60 * 1000;
     }
 
     onAdd(map) {
@@ -250,19 +210,10 @@ class OSM4Leaflet extends L.Layer {
             shouldLoadUnmapped
                 ? this.fetchCatalogueData(bounds)
                 : Promise.resolve(null),
-            shouldLoadMapped
-                ? this.fetchStatusData()
-                : Promise.resolve(null)
         ]);
         if (requestId !== this.loadRequestId) return;
 
-        const [osmResult, catalogueResult, statusResult] = results;
-        if (shouldLoadMapped && statusResult.status === 'fulfilled' && statusResult.value && Array.isArray(statusResult.value.inactive)) {
-            potaStatus = new Map(statusResult.value.inactive
-                .map(reference => [normalizePotaReference(reference), { active: false }]));
-        } else if (shouldLoadMapped && statusResult.status === 'rejected') {
-            console.error('Error fetching POTA status data:', statusResult.reason);
-        }
+        const [osmResult, catalogueResult] = results;
         let osmReferences = new Set();
         let osmError = null;
         if (shouldLoadMapped && osmResult.status === 'fulfilled' && osmResult.value && Array.isArray(osmResult.value.elements)) {
@@ -286,7 +237,7 @@ class OSM4Leaflet extends L.Layer {
 
         if (osmError) this.showErrorPopup(osmError);
         if (shouldLoadUnmapped && catalogueResult.status === 'fulfilled' && catalogueResult.value) {
-            this.addCatalogueData(catalogueResult.value, osmReferences);
+            this.addCatalogueData(catalogueResult.value);
         } else if (shouldLoadUnmapped) {
             console.error('Error fetching POTA catalogue data:', catalogueResult.reason);
             this.catalogueLayer.clearLayers();
@@ -323,7 +274,7 @@ class OSM4Leaflet extends L.Layer {
     }
 
     async fetchCatalogueData(bounds) {
-        const catalogueUrl = new URL(window.POTA_CATALOGUE_URL || '/api/pota/unmapped', window.location.href);
+        const catalogueUrl = new URL(window.POTA_CATALOGUE_URL || 'https://api.spainip.es/v1/pota/unmapped');
         catalogueUrl.search = new URLSearchParams({
             south: bounds.south,
             west: bounds.west,
@@ -344,34 +295,8 @@ class OSM4Leaflet extends L.Layer {
         return response.json();
     }
 
-    async fetchStatusData() {
-        const now = Date.now();
-        if (this.statusCache.value && now - this.statusCache.fetchedAt < this.statusRefreshMs) {
-            return this.statusCache.value;
-        }
-        if (this.statusRequest) return this.statusRequest;
-
-        const statusUrl = new URL(window.POTA_STATUS_URL || '/api/pota/status', window.location.href);
-        this.statusRequest = (async () => {
-            const response = await fetch(statusUrl, {
-                headers: { Accept: 'application/json' },
-                cache: 'no-store'
-            });
-            if (!response.ok) {
-                const details = await response.json().catch(() => ({}));
-                throw new Error(details.error || `HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            this.statusCache = { value: data, fetchedAt: Date.now() };
-            return data;
-        })().finally(() => {
-            this.statusRequest = null;
-        });
-        return this.statusRequest;
-    }
-
     async fetchNamesData(references) {
-        const namesUrl = new URL(window.POTA_NAMES_URL || '/api/pota/names', window.location.href);
+        const namesUrl = new URL(window.POTA_NAMES_URL || 'https://api.spainip.es/v1/pota/names');
         namesUrl.searchParams.set('references', [...references].join(','));
         const response = await fetch(namesUrl, {
             headers: { Accept: 'application/json' },
@@ -407,7 +332,7 @@ class OSM4Leaflet extends L.Layer {
         this.map.closePopup();
     }
 
-    addCatalogueData(catalogue, osmReferences) {
+    addCatalogueData(catalogue) {
         this.catalogueLayer.clearLayers();
         if (!Array.isArray(catalogue.features)) return;
 
@@ -417,11 +342,6 @@ class OSM4Leaflet extends L.Layer {
             const normalizedReference = normalizePotaReference(reference);
             const coordinates = feature.geometry && feature.geometry.coordinates;
             if (!reference || !normalizedReference || !Array.isArray(coordinates) || coordinates.length < 2) return;
-
-            // The catalogue endpoint excludes all globally mapped POTA refs.
-            // This viewport check also makes an OSM result win immediately if
-            // it appears before the next cached global-index refresh.
-            if (osmReferences.has(normalizedReference)) return;
 
             const [longitude, latitude] = coordinates;
             if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
@@ -501,10 +421,7 @@ class OSM4Leaflet extends L.Layer {
 
             const name = getPotaOfficialName(potaId) || features[0].properties.tags.name || 'Unnamed';
             const isUnmapped = features[0].properties.tags['unmapped_osm'] === 'true';
-            const statusSummary = getPotaStatusSummary(potaId);
-
             let popupContent = `<div class="pota-osm-popup"><b>${escapeHtml(name)}</b><br>POTA-ID: <a href="https://pota.app/#/park/${encodeURIComponent(potaId)}" target="_blank" rel="noopener noreferrer">${escapeHtml(potaId)}</a>`;
-            popupContent += getPotaStatusMarkup(potaId);
             if (isUnmapped) {
                 popupContent += `<br>This POTA reference hasn't been mapped on OpenStreetMap yet. You can contribute by editing the map on <a href="https://www.openstreetmap.org/query?lat=${center.lat}&lon=${center.lng}" target="_blank">openstreetmap.org</a> and adding the tag <b>communication:amateur_radio:pota=${potaId}</b> to the top-level relation for the reference.`;
             }
@@ -522,16 +439,6 @@ class OSM4Leaflet extends L.Layer {
                     popupAnchor: [0, -11]
                 });
                 marker = L.marker(center, { icon: infoIcon });
-            } else if (statusSummary === 'inactive' || statusSummary === 'mixed') {
-                const iconName = statusSummary === 'inactive' ? 'pause_circle' : 'help_outline';
-                const icon = L.divIcon({
-                    html: `<span class="material-icons pota-inactive-icon" aria-label="${statusSummary === 'inactive' ? 'Inactive' : 'Mixed status'} POTA park">${iconName}</span>`,
-                    className: `pota-inactive-marker pota-inactive-marker-${statusSummary}`,
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15],
-                    popupAnchor: [0, -15]
-                });
-                marker = L.marker(center, { icon });
             } else {
                 marker = L.marker(center, {
                     icon: L.icon({
@@ -1068,7 +975,7 @@ const osmLayer = new OSM4Leaflet({
             const potaId = getPotaIdFromFeature(feature);
             const name = getPotaOfficialName(potaId) || feature.properties.tags.name || 'Unnamed';
             if (potaId) {
-                const popupContent = `<div class="pota-osm-popup"><b>${escapeHtml(name)}</b><br>POTA-ID: <a href="https://pota.app/#/park/${encodeURIComponent(potaId)}" target="_blank" rel="noopener noreferrer">${escapeHtml(potaId)}</a>${getPotaStatusMarkup(potaId)}</div>`;
+                const popupContent = `<div class="pota-osm-popup"><b>${escapeHtml(name)}</b><br>POTA-ID: <a href="https://pota.app/#/park/${encodeURIComponent(potaId)}" target="_blank" rel="noopener noreferrer">${escapeHtml(potaId)}</a></div>`;
                 layer.bindPopup(popupContent);
             }
 
@@ -1113,9 +1020,8 @@ potaSpotsPanel.addTo(map);
 const statusLegend = L.control({ position: 'topleft' });
 statusLegend.onAdd = () => {
     const container = L.DomUtil.create('div', 'pota-status-legend');
-    container.innerHTML = '<b>POTA status</b>' +
-        '<span><i class="pota-legend-swatch pota-legend-active"></i>Active</span>' +
-        '<span><i class="pota-legend-swatch pota-legend-inactive"></i>Inactive</span>' +
+    container.innerHTML = '<b>POTA layers</b>' +
+        '<span><i class="pota-legend-swatch pota-legend-active"></i>Mapped park</span>' +
         '<span><i class="pota-legend-swatch pota-legend-unmapped"></i>Unmapped active park</span>';
     L.DomEvent.disableClickPropagation(container);
     return container;
