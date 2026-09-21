@@ -3,7 +3,12 @@ const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
-const { MAX_BBOX_AREA_KM2, bboxAreaKm2, normalizeBounds } = window.POTAMAP_BBOX_LIMITS;
+const {
+    MAX_BBOX_AREA_KM2,
+    bboxAreaKm2,
+    normalizeBounds,
+    normalizeLongitude
+} = window.POTAMAP_BBOX_LIMITS;
 const {
     buildActivatorProfileUrl,
     buildParkUrl,
@@ -1031,8 +1036,11 @@ loadPotaLayerSelection();
 const savedView = getCookie('mapView');
 if (savedView) {
     const [lat, lng, zoom] = savedView.split(',').map(Number);
-    initialView = [lat, lng];
-    initialZoom = zoom;
+    const normalizedLng = normalizeLongitude(lng);
+    if (Number.isFinite(lat) && normalizedLng !== null && Number.isFinite(zoom)) {
+        initialView = [Math.max(-90, Math.min(90, lat)), normalizedLng];
+        initialZoom = zoom;
+    }
 }
 
 const map = L.map('map').setView(initialView, initialZoom);
@@ -1139,6 +1147,13 @@ L.control.locate({
 map.on('moveend', () => {
     const center = map.getCenter();
     const zoom = map.getZoom();
+
+    const normalizedLng = normalizeLongitude(center.lng);
+    if (normalizedLng !== null && Math.abs(center.lng - normalizedLng) > 1e-9) {
+        map.setView([center.lat, normalizedLng], zoom, { animate: false });
+        return;
+    }
+
     setCookie('mapView', `${center.lat},${center.lng},${zoom}`, 30); // Save for 30 days
 });
 

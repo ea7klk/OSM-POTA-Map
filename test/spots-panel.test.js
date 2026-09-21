@@ -52,3 +52,9 @@ test('normalizes Leaflet map bounds for Overpass, catalogue, and spots requests'
     assert.match(appSource, /nwr\["communication:amateur_radio:pota"\]\(\$\{bounds\.south\},\$\{bounds\.west\},\$\{bounds\.north\},\$\{bounds\.east\}\)/);
     assert.doesNotMatch(appSource, /_southWest\.lng|_northEast\.lng|_southWest\.lat|_northEast\.lat/);
 });
+
+test('normalizes saved and moved map centers so returned features stay visible', () => {
+    assert.match(appSource, /const normalizedLng = normalizeLongitude\(lng\)/);
+    assert.match(appSource, /initialView = \[Math\.max\(-90, Math\.min\(90, lat\)\), normalizedLng\]/);
+    assert.match(appSource, /map\.setView\(\[center\.lat, normalizedLng\], zoom, \{ animate: false \}\)/);
+});

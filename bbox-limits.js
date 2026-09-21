@@ -52,6 +52,7 @@
     const bboxLimits = {
         MAX_BBOX_AREA_KM2,
         bboxAreaKm2,
+        normalizeLongitude,
         normalizeBounds,
         parseBounds
     };
