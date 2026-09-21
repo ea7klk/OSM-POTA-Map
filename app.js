@@ -106,12 +106,12 @@ function getPotaStatusColor(summary) {
 function getPotaStatusMarkup(value) {
     const summary = getPotaStatusSummary(value);
     if (summary === 'inactive') {
-        return '<br><span class="pota-status pota-status-inactive"><b>Currently inactive in the POTA catalogue.</b></span>' +
-            '<br>This OSM feature is retained because the park may be reactivated in the future.';
+        return '<div class="pota-status pota-status-inactive" role="status"><b>POTA status: INACTIVE</b><br>' +
+            'This park is currently inactive in the POTA catalogue. It remains visible because it may be reactivated in the future.</div>';
     }
     if (summary === 'mixed') {
-        return '<br><span class="pota-status pota-status-mixed"><b>Mixed POTA status.</b></span>' +
-            '<br>One or more references on this OSM feature are currently inactive.';
+        return '<div class="pota-status pota-status-mixed" role="status"><b>POTA status: MIXED</b><br>' +
+            'One or more references on this OSM feature are currently inactive.</div>';
     }
     return '';
 }
@@ -516,12 +516,20 @@ class OSM4Leaflet extends L.Layer {
                     popupAnchor: [0, -11]
                 });
                 marker = L.marker(center, { icon: infoIcon });
-            } else if (getPotaStatusSummary(potaId) === 'inactive' || getPotaStatusSummary(potaId) === 'mixed') {
-                const statusSummary = getPotaStatusSummary(potaId);
-                const iconName = statusSummary === 'inactive' ? 'pause_circle' : 'help_outline';
+            } else if (getPotaStatusSummary(potaId) === 'inactive') {
+                marker = L.marker(center, {
+                    icon: L.icon({
+                        iconUrl: 'pota-logo-38x38.png',
+                        iconSize: [38, 38],
+                        iconAnchor: [19, 38],
+                        popupAnchor: [0, -38],
+                        className: 'pota-inactive-logo'
+                    })
+                });
+            } else if (getPotaStatusSummary(potaId) === 'mixed') {
                 const statusIcon = L.divIcon({
-                    html: `<span class="material-icons pota-inactive-icon" aria-label="${statusSummary === 'inactive' ? 'Inactive' : 'Mixed status'} POTA park">${iconName}</span>`,
-                    className: `pota-inactive-marker pota-inactive-marker-${statusSummary}`,
+                    html: '<span class="material-icons pota-inactive-icon" aria-label="Mixed status POTA park">help_outline</span>',
+                    className: 'pota-inactive-marker pota-inactive-marker-mixed',
                     iconSize: [30, 30],
                     iconAnchor: [15, 15],
                     popupAnchor: [0, -15]
