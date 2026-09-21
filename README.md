@@ -3,48 +3,37 @@
 An interactive Leaflet map for Parks on the Air (POTA). The map shows POTA
 features from OpenStreetMap (OSM) through the configured Overpass server and
 adds a separate catalogue layer for active POTA parks that do not yet have an
-OSM POTA reference.
+OSM POTA reference. POTA data is requested directly from the external POTA
+services; this application only serves the static web application and its
+runtime configuration.
 
 ## Map layers and data precedence
 
 - **OpenStreetMap:** OSM geometries and markers tagged with
   `communication:amateur_radio:pota` are displayed in the regular marker layer.
-- **POTA status:** The server downloads the POTA CSV and uses its `active` field
-  to label mapped OSM features. Inactive parks remain visible because they may
-  be reactivated in the future, but use muted styling and an explicit inactive
-  status in their popups.
-- **Unmapped POTA catalogue:** The server compares active CSV park references
-  with the complete OSM reference index. Only active parks whose references are
-  absent from OSM are returned, using the coordinates in the CSV. The map links
-  to OSM so contributors can add the missing reference.
+- **Unmapped POTA catalogue:** The external POTA service returns active parks
+  whose references are not mapped in OSM, using the coordinates in the POTA
+  catalogue. The map links to OSM so contributors can add the missing reference.
 - **Current POTA spots:** A blue antenna layer shows spots in the current map
   view. The collapsible **POTA Spots** panel lists all current spots, newest
   first; clicking a reference centers the map on that spot at zoom level 9.
-- Overpass clusters use a green style. Inactive OSM parks use muted gray or
-  amber styling, while unmapped catalogue markers and their clusters use a red
-  style in a separate Leaflet layer. The catalogue remains visible at every
-  zoom level while the current bounding box is within the query limit. OSM
-  results always take precedence, including when the matching OSM park is
-  outside the current map view.
+- Overpass clusters use a green style, while unmapped catalogue markers and
+  their clusters use a red style in a separate Leaflet layer. The catalogue
+  remains visible at every zoom level while the current bounding box is within
+  the query limit. OSM results always take precedence, including when the
+  matching OSM park is outside the current map view.
 
-The CSV is not written into the replicated Overpass database. The server loads
-it on startup and refreshes it nightly at 02:00 UTC. The OSM reference index is
-refreshed when needed, with a one-minute freshness window. If a refresh fails,
-the last good CSV remains available; the server fails closed when it cannot
-confirm OSM references, to avoid displaying duplicate parks. The status data is
-served by `/api/pota/status` as a compact set of currently inactive references.
-The browser requests official CSV names for the POTA references in the current
-OSM view through `/api/pota/names`, and uses those names in mapped-feature
-popups. `/api/pota/unmapped` remains restricted to active parks only. An OSM
-reference that is not present in the current CSV is left visible with its OSM
-name and no inactive label, because the catalogue cannot confirm its status.
+The browser requests official POTA names for references in the current OSM view,
+active unmapped parks for the current map bounds, and current spots directly
+from the configured external endpoints. An OSM reference that is not returned
+by the names service is left visible with its OSM name.
 
 ## Query limits
 
-The map and `/api/pota/unmapped` endpoint enforce a maximum visible bounding
-box area of 50,000,000 km². Zoom in when the map reports that the area is too
-large. There is no feature-count cap; very dense views can take longer to
-download and render.
+The map enforces a maximum visible bounding-box area of 50,000,000 km² before
+requesting the external bounds-based services. Zoom in when the map reports
+that the area is too large. There is no feature-count cap; very dense views can
+take longer to download and render.
 
 ## Run locally
 
@@ -69,11 +58,10 @@ The server accepts these environment variables:
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `OVERPASS_URL` | `https://api.spainip.es/v1/overpass/interpreter` | Overpass endpoint used by the map and OSM reference index. |
-| `POTA_CSV_URL` | `https://pota.app/all_parks_ext.csv` | POTA park catalogue CSV. |
-| `POTA_CSV_REFRESH_MS` | 24 hours | CSV cache freshness fallback. The scheduled refresh runs at the configured UTC hour. |
-| `POTA_CSV_REFRESH_HOUR_UTC` | `2` | UTC hour for the nightly CSV refresh. |
-| `POTA_OSM_REFERENCE_REFRESH_MS` | 60,000 ms | OSM reference index freshness window. |
+| `OVERPASS_URL` | `https://api.spainip.es/v1/overpass/interpreter` | External Overpass endpoint used by the map. |
+| `POTA_CATALOGUE_URL` | `https://api.spainip.es/v1/pota/unmapped` | External active, unmapped-park endpoint. |
+| `POTA_NAMES_URL` | `https://api.spainip.es/v1/pota/names` | External official-name endpoint. |
+| `POTA_SPOTS_URL` | `https://api.spainip.es/v1/pota/spots` | External current-spots endpoint. |
 | `MATOMO_ENABLED` | `false` | Enables Matomo tracking when set to `true`. |
 | `MATOMO_URL` | empty | Matomo base URL. |
 | `MATOMO_SITE_ID` | empty | Matomo site ID. |
