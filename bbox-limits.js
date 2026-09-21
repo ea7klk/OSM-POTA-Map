@@ -12,6 +12,31 @@
         return height * width;
     }
 
+    function normalizeLongitude(value) {
+        const longitude = Number(value);
+        if (!Number.isFinite(longitude)) return null;
+
+        const wrapped = ((longitude + 180) % 360 + 360) % 360 - 180;
+        return wrapped === -180 && longitude > 0 ? 180 : wrapped;
+    }
+
+    function normalizeBounds(bounds) {
+        if (!bounds) return null;
+
+        const values = ['south', 'west', 'north', 'east'].map(key => Number(bounds[key]));
+        if (!values.every(Number.isFinite)) return null;
+
+        const south = Math.max(-90, Math.min(90, values[0]));
+        const north = Math.max(-90, Math.min(90, values[2]));
+        if (south > north) return null;
+
+        const west = normalizeLongitude(values[1]);
+        const east = normalizeLongitude(values[3]);
+        if (west === null || east === null) return null;
+
+        return { south, west, north, east };
+    }
+
     function parseBounds(query) {
         const values = ['south', 'west', 'north', 'east'].map(key => query[key]);
         if (values.some(value => value === undefined || value === '')) return null;
@@ -24,7 +49,12 @@
         return { south, west, north, east };
     }
 
-    const bboxLimits = { MAX_BBOX_AREA_KM2, bboxAreaKm2, parseBounds };
+    const bboxLimits = {
+        MAX_BBOX_AREA_KM2,
+        bboxAreaKm2,
+        normalizeBounds,
+        parseBounds
+    };
 
     if (typeof module !== 'undefined' && module.exports) module.exports = bboxLimits;
     if (typeof window !== 'undefined') window.POTAMAP_BBOX_LIMITS = bboxLimits;

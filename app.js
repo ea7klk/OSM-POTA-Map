@@ -3,7 +3,7 @@ const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
-const { MAX_BBOX_AREA_KM2, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
+const { MAX_BBOX_AREA_KM2, bboxAreaKm2, normalizeBounds } = window.POTAMAP_BBOX_LIMITS;
 const {
     buildActivatorProfileUrl,
     buildParkUrl,
@@ -107,6 +107,16 @@ function getPotaFeatureStyle(feature) {
     };
 }
 
+function getMapRequestBounds(map) {
+    const bounds = map.getBounds();
+    return normalizeBounds({
+        south: bounds.getSouth(),
+        west: bounds.getWest(),
+        north: bounds.getNorth(),
+        east: bounds.getEast()
+    });
+}
+
 // OSM4Leaflet class implementation
 class OSM4Leaflet extends L.Layer {
     constructor(options) {
@@ -192,9 +202,13 @@ class OSM4Leaflet extends L.Layer {
     async loadData() {
         const shouldLoadMapped = potaLayerSelection.mapped;
         const shouldLoadUnmapped = potaLayerSelection.unmapped;
-        const bounds = this.map.getBounds();
-        const extendedBounds = this.extendBounds(bounds);
+        const bounds = getMapRequestBounds(this.map);
         const requestId = ++this.loadRequestId;
+
+        if (!bounds) {
+            this.showErrorPopup('The current map bounds are invalid. Please move or zoom the map and try again.');
+            return;
+        }
 
         if (!shouldLoadMapped) {
             this.baseLayer.clearLayers();
@@ -208,12 +222,11 @@ class OSM4Leaflet extends L.Layer {
             return;
         }
 
-        const { _southWest, _northEast } = extendedBounds;
         const bbox = {
-            south: _southWest.lat,
-            west: _southWest.lng,
-            north: _northEast.lat,
-            east: _northEast.lng
+            south: bounds.south,
+            west: bounds.west,
+            north: bounds.north,
+            east: bounds.east
         };
         const area = bboxAreaKm2(bbox);
         if (area > MAX_BBOX_AREA_KM2) {
@@ -227,10 +240,10 @@ class OSM4Leaflet extends L.Layer {
         this.clearErrorPopup();
         const results = await Promise.allSettled([
             shouldLoadMapped
-                ? this.fetchPOTAData(this.buildOverpassQuery(extendedBounds))
+                ? this.fetchPOTAData(this.buildOverpassQuery(bounds))
                 : Promise.resolve(null),
             shouldLoadUnmapped
-                ? this.fetchCatalogueData(extendedBounds)
+                ? this.fetchCatalogueData(bounds)
                 : Promise.resolve(null),
             shouldLoadMapped
                 ? this.fetchStatusData()
@@ -278,18 +291,8 @@ class OSM4Leaflet extends L.Layer {
         }
     }
 
-    extendBounds(bounds) {
-        const sw = bounds.getSouthWest();
-        const ne = bounds.getNorthEast();
-        return L.latLngBounds(
-            L.latLng(sw.lat, sw.lng),
-            L.latLng(ne.lat, ne.lng)
-        );
-    }
-
     buildOverpassQuery(bounds) {
-        const { _southWest, _northEast } = bounds;
-        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out geom;`;
+        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${bounds.south},${bounds.west},${bounds.north},${bounds.east});out geom;`;
     }
 
     async fetchPOTAData(query) {
@@ -315,13 +318,12 @@ class OSM4Leaflet extends L.Layer {
     }
 
     async fetchCatalogueData(bounds) {
-        const { _southWest, _northEast } = bounds;
         const catalogueUrl = new URL(window.POTA_CATALOGUE_URL || '/api/pota/unmapped', window.location.href);
         catalogueUrl.search = new URLSearchParams({
-            south: _southWest.lat,
-            west: _southWest.lng,
-            north: _northEast.lat,
-            east: _northEast.lng
+            south: bounds.south,
+            west: bounds.west,
+            north: bounds.north,
+            east: bounds.east
         }).toString();
 
         const response = await fetch(catalogueUrl, {
@@ -676,12 +678,11 @@ class PotaSpotsLayer extends L.Layer {
     }
 
     async fetchSpotsData(bounds) {
-        const { _southWest, _northEast } = bounds;
         const url = buildSpotsRequestUrl(window.POTA_SPOTS_URL || 'https://api.spainip.es/v1/pota/spots', {
-            south: _southWest.lat,
-            west: _southWest.lng,
-            north: _northEast.lat,
-            east: _northEast.lng
+            south: bounds.south,
+            west: bounds.west,
+            north: bounds.north,
+            east: bounds.east
         });
         const response = await fetch(url, {
             headers: { Accept: 'application/geo+json, application/json' },
@@ -697,7 +698,9 @@ class PotaSpotsLayer extends L.Layer {
         if (!this.map || !this.isVisible) return;
         const requestId = ++this.loadRequestId;
         try {
-            const data = await this.fetchSpotsData(this.map.getBounds());
+            const bounds = getMapRequestBounds(this.map);
+            if (!bounds) return;
+            const data = await this.fetchSpotsData(bounds);
             if (requestId !== this.loadRequestId) return;
             this.addData(data);
         } catch (error) {
