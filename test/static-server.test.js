@@ -30,6 +30,7 @@ test('test Fleet deployment targets the Nginx port and image defaults', () => {
   assert.match(testFleet, /image: ghcr\.io\/ea7klk\/osm-pota-map:test/);
   assert.match(testFleet, /containerPort: 80/);
   assert.doesNotMatch(testFleet, /server\.js/);
+  assert.doesNotMatch(testFleet, /port: 3000/);
   assert.match(testFleet, /port: 80/);
 });
 
