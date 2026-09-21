@@ -1,25 +1,24 @@
-# Use Node.js 22.9 as the base image
-FROM node:22.9
+# Build a compact, precompressed static site with Node.js.
+FROM node:22-alpine AS static-build
 
-# Set working directory
-WORKDIR /app
+WORKDIR /build
+COPY . /build/source
+RUN node /build/source/scripts/build_static.js /build/source /build/dist
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# The production runtime contains only Nginx and the generated static site.
+FROM nginx:1.27-alpine
 
-# Install Node.js dependencies
-RUN npm install
+COPY --from=static-build /build/dist/ /usr/share/nginx/html/
+COPY nginx.conf.template /etc/nginx/conf.d/default.conf
+COPY config.js.template /etc/nginx/pota-config.js.template
+COPY docker-entrypoint.d/40-generate-config.sh /docker-entrypoint.d/40-generate-config.sh
 
-# Copy the rest of the application
-COPY ./ .
-
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Set environment variables with default values
 ENV MATOMO_ENABLED=false
 ENV MATOMO_URL=
 ENV MATOMO_SITE_ID=
+ENV OVERPASS_URL=https://api.spainip.es/v1/overpass/interpreter
+ENV POTA_CATALOGUE_URL=https://api.spainip.es/v1/pota/unmapped
+ENV POTA_NAMES_URL=https://api.spainip.es/v1/pota/names
+ENV POTA_SPOTS_URL=https://api.spainip.es/v1/pota/spots
 
-# Start the Node.js server
-CMD ["node", "server.js"]
+EXPOSE 80
