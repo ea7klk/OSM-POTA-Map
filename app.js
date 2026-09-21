@@ -237,7 +237,7 @@ class OSM4Leaflet extends L.Layer {
 
         if (osmError) this.showErrorPopup(osmError);
         if (shouldLoadUnmapped && catalogueResult.status === 'fulfilled' && catalogueResult.value) {
-            this.addCatalogueData(catalogueResult.value, osmReferences);
+            this.addCatalogueData(catalogueResult.value);
         } else if (shouldLoadUnmapped) {
             console.error('Error fetching POTA catalogue data:', catalogueResult.reason);
             this.catalogueLayer.clearLayers();
@@ -332,7 +332,7 @@ class OSM4Leaflet extends L.Layer {
         this.map.closePopup();
     }
 
-    addCatalogueData(catalogue, osmReferences) {
+    addCatalogueData(catalogue) {
         this.catalogueLayer.clearLayers();
         if (!Array.isArray(catalogue.features)) return;
 
@@ -342,11 +342,6 @@ class OSM4Leaflet extends L.Layer {
             const normalizedReference = normalizePotaReference(reference);
             const coordinates = feature.geometry && feature.geometry.coordinates;
             if (!reference || !normalizedReference || !Array.isArray(coordinates) || coordinates.length < 2) return;
-
-            // The catalogue endpoint excludes all globally mapped POTA refs.
-            // This viewport check also makes an OSM result win immediately if
-            // it appears before the next cached global-index refresh.
-            if (osmReferences.has(normalizedReference)) return;
 
             const [longitude, latitude] = coordinates;
             if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;

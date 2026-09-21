@@ -58,3 +58,9 @@ test('normalizes saved and moved map centers so returned features stay visible',
     assert.match(appSource, /initialView = \[Math\.max\(-90, Math\.min\(90, lat\)\), normalizedLng\]/);
     assert.match(appSource, /map\.setView\(\[center\.lat, normalizedLng\], zoom, \{ animate: false \}\)/);
 });
+
+test('trusts the external unmapped endpoint without client-side deduplication', () => {
+    assert.match(appSource, /this\.addCatalogueData\(catalogueResult\.value\)/);
+    assert.doesNotMatch(appSource, /this\.addCatalogueData\(catalogueResult\.value, osmReferences\)/);
+    assert.doesNotMatch(appSource, /osmReferences\.has\(normalizedReference\)/);
+});
