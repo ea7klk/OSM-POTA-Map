@@ -22,12 +22,15 @@ runtime configuration.
   remains visible at every zoom level while the current bounding box is within
   the query limit. The external unmapped endpoint already excludes references
   that are mapped in OSM, so the client renders its response without another
-  deduplication pass.
+  deduplication pass. Mapped parks whose POTA catalogue status is inactive are
+  retained on the map and rendered in gray; their status is requested only for
+  mapped references returned by Overpass in the current map view.
 
-The browser requests official POTA names for references in the current OSM view,
-active unmapped parks for the current map bounds, and current spots directly
-from the configured external endpoints. An OSM reference that is not returned
-by the names service is left visible with its OSM name.
+The browser requests official POTA names and active-status data for references
+in the current OSM view, active unmapped parks for the current map bounds, and
+current spots directly from the configured external endpoints. An OSM reference
+that is not returned by the names or status services is left visible with its
+OSM name and normal styling.
 
 ## Query limits
 
@@ -66,6 +69,7 @@ The server accepts these environment variables:
 | `OVERPASS_URL` | `https://api.spainip.es/v1/overpass/interpreter` | External Overpass endpoint used by the map. |
 | `POTA_CATALOGUE_URL` | `https://api.spainip.es/v1/pota/unmapped` | External active, unmapped-park endpoint. |
 | `POTA_NAMES_URL` | `https://api.spainip.es/v1/pota/names` | External official-name endpoint. |
+| `POTA_STATUS_URL` | `https://api.spainip.es/v1/pota/status` | External POTA active-status endpoint, queried with current mapped references. |
 | `POTA_SPOTS_URL` | `https://api.spainip.es/v1/pota/spots` | External current-spots endpoint. |
 | `MATOMO_ENABLED` | `false` | Enables Matomo tracking when set to `true`. |
 | `MATOMO_URL` | empty | Matomo base URL. |

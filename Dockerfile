@@ -19,6 +19,7 @@ ENV MATOMO_SITE_ID=
 ENV OVERPASS_URL=https://api.spainip.es/v1/overpass/interpreter
 ENV POTA_CATALOGUE_URL=https://api.spainip.es/v1/pota/unmapped
 ENV POTA_NAMES_URL=https://api.spainip.es/v1/pota/names
+ENV POTA_STATUS_URL=https://api.spainip.es/v1/pota/status
 ENV POTA_SPOTS_URL=https://api.spainip.es/v1/pota/spots
 
 EXPOSE 80

@@ -96,6 +96,21 @@ header h1 {
     text-align: center;
 }
 
+.pota-inactive-marker {
+    background: transparent;
+    border: 0;
+}
+
+.pota-inactive-icon {
+    color: #757575;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.45));
+    font-size: 30px;
+}
+
+.pota-inactive-marker-mixed .pota-inactive-icon {
+    color: #a66b00;
+}
+
 .pota-spot-marker {
     background: transparent;
     border: 0;
@@ -334,6 +349,10 @@ header h1 {
 
 .pota-legend-unmapped {
     background: #b71c1c;
+}
+
+.pota-legend-inactive {
+    background: #757575;
 }
 
 .pota-layer-visibility {

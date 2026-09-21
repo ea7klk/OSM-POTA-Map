@@ -12,6 +12,7 @@ const MATOMO_SITE_ID = process.env.MATOMO_SITE_ID || '';
 const OVERPASS_URL = process.env.OVERPASS_URL || 'https://api.spainip.es/v1/overpass/interpreter';
 const POTA_CATALOGUE_URL = process.env.POTA_CATALOGUE_URL || 'https://api.spainip.es/v1/pota/unmapped';
 const POTA_NAMES_URL = process.env.POTA_NAMES_URL || 'https://api.spainip.es/v1/pota/names';
+const POTA_STATUS_URL = process.env.POTA_STATUS_URL || 'https://api.spainip.es/v1/pota/status';
 const POTA_SPOTS_URL = process.env.POTA_SPOTS_URL || 'https://api.spainip.es/v1/pota/spots';
 
 app.use(express.static(path.join(__dirname, '.')));
@@ -29,6 +30,7 @@ app.get('/config.js', (req, res) => {
         window.OVERPASS_URL = '${OVERPASS_URL}';
         window.POTA_CATALOGUE_URL = '${POTA_CATALOGUE_URL}';
         window.POTA_NAMES_URL = '${POTA_NAMES_URL}';
+        window.POTA_STATUS_URL = '${POTA_STATUS_URL}';
         window.POTA_SPOTS_URL = '${POTA_SPOTS_URL}';
     `);
 });
