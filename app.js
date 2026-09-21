@@ -3,7 +3,12 @@ const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'https://fonts.googleapis.com/icon?family=Material+Icons';
 document.head.appendChild(link);
-const { MAX_BBOX_AREA_KM2, bboxAreaKm2 } = window.POTAMAP_BBOX_LIMITS;
+const {
+    MAX_BBOX_AREA_KM2,
+    bboxAreaKm2,
+    normalizeBounds,
+    normalizeLongitude
+} = window.POTAMAP_BBOX_LIMITS;
 const {
     buildActivatorProfileUrl,
     buildParkUrl,
@@ -19,6 +24,7 @@ const potaLayerSelection = {
     unmapped: true,
     spots: true
 };
+const POTA_LAYER_SELECTION_COOKIE = 'potaLayerSelection';
 
 function normalizePotaReference(value) {
     return String(value || '').trim().toUpperCase();
@@ -106,6 +112,16 @@ function getPotaFeatureStyle(feature) {
     };
 }
 
+function getMapRequestBounds(map) {
+    const bounds = map.getBounds();
+    return normalizeBounds({
+        south: bounds.getSouth(),
+        west: bounds.getWest(),
+        north: bounds.getNorth(),
+        east: bounds.getEast()
+    });
+}
+
 // OSM4Leaflet class implementation
 class OSM4Leaflet extends L.Layer {
     constructor(options) {
@@ -191,9 +207,13 @@ class OSM4Leaflet extends L.Layer {
     async loadData() {
         const shouldLoadMapped = potaLayerSelection.mapped;
         const shouldLoadUnmapped = potaLayerSelection.unmapped;
-        const bounds = this.map.getBounds();
-        const extendedBounds = this.extendBounds(bounds);
+        const bounds = getMapRequestBounds(this.map);
         const requestId = ++this.loadRequestId;
+
+        if (!bounds) {
+            this.showErrorPopup('The current map bounds are invalid. Please move or zoom the map and try again.');
+            return;
+        }
 
         if (!shouldLoadMapped) {
             this.baseLayer.clearLayers();
@@ -207,12 +227,11 @@ class OSM4Leaflet extends L.Layer {
             return;
         }
 
-        const { _southWest, _northEast } = extendedBounds;
         const bbox = {
-            south: _southWest.lat,
-            west: _southWest.lng,
-            north: _northEast.lat,
-            east: _northEast.lng
+            south: bounds.south,
+            west: bounds.west,
+            north: bounds.north,
+            east: bounds.east
         };
         const area = bboxAreaKm2(bbox);
         if (area > MAX_BBOX_AREA_KM2) {
@@ -226,10 +245,10 @@ class OSM4Leaflet extends L.Layer {
         this.clearErrorPopup();
         const results = await Promise.allSettled([
             shouldLoadMapped
-                ? this.fetchPOTAData(this.buildOverpassQuery(extendedBounds))
+                ? this.fetchPOTAData(this.buildOverpassQuery(bounds))
                 : Promise.resolve(null),
             shouldLoadUnmapped
-                ? this.fetchCatalogueData(extendedBounds)
+                ? this.fetchCatalogueData(bounds)
                 : Promise.resolve(null),
             shouldLoadMapped
                 ? this.fetchStatusData()
@@ -277,18 +296,8 @@ class OSM4Leaflet extends L.Layer {
         }
     }
 
-    extendBounds(bounds) {
-        const sw = bounds.getSouthWest();
-        const ne = bounds.getNorthEast();
-        return L.latLngBounds(
-            L.latLng(sw.lat, sw.lng),
-            L.latLng(ne.lat, ne.lng)
-        );
-    }
-
     buildOverpassQuery(bounds) {
-        const { _southWest, _northEast } = bounds;
-        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${_southWest.lat},${_southWest.lng},${_northEast.lat},${_northEast.lng});out geom;`;
+        return `[out:json][timeout:60];nwr["communication:amateur_radio:pota"](${bounds.south},${bounds.west},${bounds.north},${bounds.east});out geom;`;
     }
 
     async fetchPOTAData(query) {
@@ -314,13 +323,12 @@ class OSM4Leaflet extends L.Layer {
     }
 
     async fetchCatalogueData(bounds) {
-        const { _southWest, _northEast } = bounds;
         const catalogueUrl = new URL(window.POTA_CATALOGUE_URL || '/api/pota/unmapped', window.location.href);
         catalogueUrl.search = new URLSearchParams({
-            south: _southWest.lat,
-            west: _southWest.lng,
-            north: _northEast.lat,
-            east: _northEast.lng
+            south: bounds.south,
+            west: bounds.west,
+            north: bounds.north,
+            east: bounds.east
         }).toString();
 
         const response = await fetch(catalogueUrl, {
@@ -643,8 +651,8 @@ class PotaSpotsLayer extends L.Layer {
         this.loadRequestId = 0;
         this.loadTimeout = null;
         this.refreshTimer = null;
-        this.refreshMs = 60 * 1000;
-        this.isVisible = true;
+        this.refreshMs = 30 * 1000;
+        this.isVisible = potaLayerSelection.spots;
     }
 
     onAdd(map) {
@@ -675,12 +683,11 @@ class PotaSpotsLayer extends L.Layer {
     }
 
     async fetchSpotsData(bounds) {
-        const { _southWest, _northEast } = bounds;
         const url = buildSpotsRequestUrl(window.POTA_SPOTS_URL || 'https://api.spainip.es/v1/pota/spots', {
-            south: _southWest.lat,
-            west: _southWest.lng,
-            north: _northEast.lat,
-            east: _northEast.lng
+            south: bounds.south,
+            west: bounds.west,
+            north: bounds.north,
+            east: bounds.east
         });
         const response = await fetch(url, {
             headers: { Accept: 'application/geo+json, application/json' },
@@ -696,7 +703,9 @@ class PotaSpotsLayer extends L.Layer {
         if (!this.map || !this.isVisible) return;
         const requestId = ++this.loadRequestId;
         try {
-            const data = await this.fetchSpotsData(this.map.getBounds());
+            const bounds = getMapRequestBounds(this.map);
+            if (!bounds) return;
+            const data = await this.fetchSpotsData(bounds);
             if (requestId !== this.loadRequestId) return;
             this.addData(data);
         } catch (error) {
@@ -754,9 +763,9 @@ class PotaSpotsPanel extends L.Control {
         this.features = [];
         this.loadRequestId = 0;
         this.refreshTimer = null;
-        this.refreshMs = 60 * 1000;
+        this.refreshMs = 30 * 1000;
         this.isCollapsed = true;
-        this.isVisible = true;
+        this.isVisible = potaLayerSelection.spots;
     }
 
     onAdd(map) {
@@ -920,9 +929,9 @@ class PotaLayerVisibilityControl extends L.Control {
             '<button type="button" data-visibility-action="all">All</button>' +
             '<button type="button" data-visibility-action="none">None</button>' +
             '</div>' +
-            '<label><input type="checkbox" data-visibility-layer="mapped" checked>Mapped parks</label>' +
-            '<label><input type="checkbox" data-visibility-layer="unmapped" checked>Unmapped parks</label>' +
-            '<label><input type="checkbox" data-visibility-layer="spots" checked>Spots</label>';
+            `<label><input type="checkbox" data-visibility-layer="mapped"${potaLayerSelection.mapped ? ' checked' : ''}>Mapped parks</label>` +
+            `<label><input type="checkbox" data-visibility-layer="unmapped"${potaLayerSelection.unmapped ? ' checked' : ''}>Unmapped parks</label>` +
+            `<label><input type="checkbox" data-visibility-layer="spots"${potaLayerSelection.spots ? ' checked' : ''}>Spots</label>`;
         L.DomEvent.disableClickPropagation(this.container);
         L.DomEvent.disableScrollPropagation(this.container);
         L.DomEvent.on(this.container, 'change', this.handleChange, this);
@@ -960,6 +969,7 @@ class PotaLayerVisibilityControl extends L.Control {
         const input = event.target.closest('[data-visibility-layer]');
         if (!input) return;
         potaLayerSelection[input.dataset.visibilityLayer] = input.checked;
+        savePotaLayerSelection();
         this.emitSelectionChange();
     }
 
@@ -972,6 +982,7 @@ class PotaLayerVisibilityControl extends L.Control {
             const input = this.container.querySelector(`[data-visibility-layer="${layerName}"]`);
             if (input) input.checked = value;
         });
+        savePotaLayerSelection();
         this.emitSelectionChange();
     }
 }
@@ -995,12 +1006,41 @@ function setCookie(name, value, days) {
     document.cookie = `${name}=${value};${expires};path=/`;
 }
 
+function loadPotaLayerSelection() {
+    const savedSelection = getCookie(POTA_LAYER_SELECTION_COOKIE);
+    if (!savedSelection) return;
+
+    try {
+        const parsedSelection = JSON.parse(decodeURIComponent(savedSelection));
+        Object.keys(potaLayerSelection).forEach(layerName => {
+            if (typeof parsedSelection[layerName] === 'boolean') {
+                potaLayerSelection[layerName] = parsedSelection[layerName];
+            }
+        });
+    } catch (error) {
+        console.warn('Ignoring invalid saved POTA layer selection:', error);
+    }
+}
+
+function savePotaLayerSelection() {
+    setCookie(
+        POTA_LAYER_SELECTION_COOKIE,
+        encodeURIComponent(JSON.stringify(potaLayerSelection)),
+        30
+    );
+}
+
+loadPotaLayerSelection();
+
 // Check if there's a saved location in cookies
 const savedView = getCookie('mapView');
 if (savedView) {
     const [lat, lng, zoom] = savedView.split(',').map(Number);
-    initialView = [lat, lng];
-    initialZoom = zoom;
+    const normalizedLng = normalizeLongitude(lng);
+    if (Number.isFinite(lat) && normalizedLng !== null && Number.isFinite(zoom)) {
+        initialView = [Math.max(-90, Math.min(90, lat)), normalizedLng];
+        initialZoom = zoom;
+    }
 }
 
 const map = L.map('map').setView(initialView, initialZoom);
@@ -1070,7 +1110,7 @@ potaSpotsLayer.addTo(map);
 const potaSpotsPanel = new PotaSpotsPanel();
 potaSpotsPanel.addTo(map);
 
-const statusLegend = L.control({ position: 'topright' });
+const statusLegend = L.control({ position: 'topleft' });
 statusLegend.onAdd = () => {
     const container = L.DomUtil.create('div', 'pota-status-legend');
     container.innerHTML = '<b>POTA status</b>' +
@@ -1080,7 +1120,6 @@ statusLegend.onAdd = () => {
     L.DomEvent.disableClickPropagation(container);
     return container;
 };
-statusLegend.addTo(map);
 
 const visibilityControl = new PotaLayerVisibilityControl();
 visibilityControl.addTo(map);
@@ -1089,6 +1128,7 @@ visibilityControl.onSelectionChange = selection => {
     potaSpotsLayer.setVisible(selection.spots);
     potaSpotsPanel.setVisible(selection.spots);
 };
+statusLegend.addTo(map);
 
 // Add locate control
 L.control.locate({
@@ -1107,6 +1147,13 @@ L.control.locate({
 map.on('moveend', () => {
     const center = map.getCenter();
     const zoom = map.getZoom();
+
+    const normalizedLng = normalizeLongitude(center.lng);
+    if (normalizedLng !== null && Math.abs(center.lng - normalizedLng) > 1e-9) {
+        map.setView([center.lat, normalizedLng], zoom, { animate: false });
+        return;
+    }
+
     setCookie('mapView', `${center.lat},${center.lng},${zoom}`, 30); // Save for 30 days
 });
 
