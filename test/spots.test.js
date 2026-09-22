@@ -11,6 +11,7 @@ const {
     getIaruBand,
     getIaruBandOptions,
     getSpotDisplayValues,
+    normalizeSpotMode,
     parseFrequencyMHz,
     parseSpotTime,
     sortSpotFeaturesByNewest
@@ -104,6 +105,7 @@ test('parses spot frequencies in common units and maps them to IARU bands', () =
 });
 
 test('filters spot features by mode and IARU band without mutating the source list', () => {
+    assert.equal(normalizeSpotMode('  ssb '), 'SSB');
     const features = [
         { properties: { mode: 'SSB', frequency: '14.250 MHz' } },
         { properties: { mode: 'CW', frequency: '14.060 MHz' } },
