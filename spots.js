@@ -143,6 +143,7 @@
         getIaruBand,
         getIaruBandOptions,
         getSpotDisplayValues,
+        normalizeSpotMode,
         parseFrequencyMHz,
         parseSpotTime,
         sortSpotFeaturesByNewest
