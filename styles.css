@@ -241,6 +241,35 @@ header h1 {
     padding: 0.35rem 0.55rem;
 }
 
+.pota-spots-filters {
+    background: #f5f9fc;
+    border-bottom: 1px solid #bbdefb;
+    display: grid;
+    gap: 0.4rem;
+    grid-template-columns: 1fr 1fr;
+    padding: 0.45rem 0.55rem;
+}
+
+.pota-spots-filters label {
+    color: #0d47a1;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.68rem;
+    font-weight: 700;
+    gap: 0.15rem;
+}
+
+.pota-spots-filters select {
+    background: #fff;
+    border: 1px solid #90caf9;
+    border-radius: 3px;
+    color: #212121;
+    font: inherit;
+    font-weight: 400;
+    min-width: 0;
+    padding: 0.2rem 0.25rem;
+}
+
 .pota-spots-table-header {
     display: grid;
     grid-template-columns: minmax(7.5rem, 1fr) minmax(0, 1.65fr);

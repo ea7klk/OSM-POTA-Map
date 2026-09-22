@@ -1,6 +1,26 @@
 'use strict';
 
 (function exposeSpotsApi(root, moduleObject) {
+    // These ranges cover the commonly used IARU amateur allocations while
+    // accepting the region-specific portions used by POTA activators.
+    const IARU_BANDS = [
+        { value: '160m', label: '160 m', minMHz: 1.8, maxMHz: 2.0 },
+        { value: '80m', label: '80 m', minMHz: 3.5, maxMHz: 4.0 },
+        { value: '60m', label: '60 m', minMHz: 5.25, maxMHz: 5.45 },
+        { value: '40m', label: '40 m', minMHz: 7.0, maxMHz: 7.3 },
+        { value: '30m', label: '30 m', minMHz: 10.1, maxMHz: 10.15 },
+        { value: '20m', label: '20 m', minMHz: 14.0, maxMHz: 14.35 },
+        { value: '17m', label: '17 m', minMHz: 18.068, maxMHz: 18.168 },
+        { value: '15m', label: '15 m', minMHz: 21.0, maxMHz: 21.45 },
+        { value: '12m', label: '12 m', minMHz: 24.89, maxMHz: 24.99 },
+        { value: '10m', label: '10 m', minMHz: 28.0, maxMHz: 29.7 },
+        { value: '6m', label: '6 m', minMHz: 50.0, maxMHz: 54.0 },
+        { value: '4m', label: '4 m', minMHz: 70.0, maxMHz: 70.5 },
+        { value: '2m', label: '2 m', minMHz: 144.0, maxMHz: 148.0 },
+        { value: '70cm', label: '70 cm', minMHz: 420.0, maxMHz: 450.0 },
+        { value: '23cm', label: '23 cm', minMHz: 1240.0, maxMHz: 1300.0 }
+    ];
+
     function parseSpotTime(value) {
         const text = String(value || '').trim();
         if (!text) return null;
@@ -58,6 +78,51 @@
         };
     }
 
+    function parseFrequencyMHz(value) {
+        const text = String(value || '').trim().replace(',', '.');
+        if (!text) return null;
+
+        const numericMatch = text.match(/[0-9]+(?:\.[0-9]+)?/);
+        if (!numericMatch) return null;
+        const numericValue = Number(numericMatch[0]);
+        if (!Number.isFinite(numericValue)) return null;
+
+        if (/\bghz\b/i.test(text)) return numericValue * 1000;
+        if (/\bkhz\b/i.test(text)) return numericValue / 1000;
+        if (/\bhz\b/i.test(text)) return numericValue / 1000000;
+        if (numericValue >= 1000000) return numericValue / 1000000;
+        if (numericValue >= 1000) return numericValue / 1000;
+        return numericValue;
+    }
+
+    function getIaruBand(value) {
+        const frequencyMHz = parseFrequencyMHz(value);
+        if (frequencyMHz === null) return null;
+        const band = IARU_BANDS.find(({ minMHz, maxMHz }) =>
+            frequencyMHz >= minMHz && frequencyMHz <= maxMHz
+        );
+        return band ? band.value : null;
+    }
+
+    function getIaruBandOptions() {
+        return IARU_BANDS.map(({ value, label }) => ({ value, label }));
+    }
+
+    function normalizeSpotMode(value) {
+        return String(value || '').trim().toUpperCase();
+    }
+
+    function filterSpotFeatures(features, filters = {}) {
+        const selectedMode = normalizeSpotMode(filters.mode);
+        const selectedBand = String(filters.band || '').trim();
+        return (Array.isArray(features) ? features : []).filter(feature => {
+            const properties = feature && feature.properties || {};
+            const modeMatches = !selectedMode || normalizeSpotMode(properties.mode) === selectedMode;
+            const bandMatches = !selectedBand || getIaruBand(properties.frequency) === selectedBand;
+            return modeMatches && bandMatches;
+        });
+    }
+
     function sortSpotFeaturesByNewest(features) {
         return (Array.isArray(features) ? features : []).slice().sort((left, right) => {
             const leftTime = parseSpotTime(left && left.properties && left.properties.spotTime);
@@ -74,7 +139,11 @@
         buildParkUrl,
         buildSpotsRequestUrl,
         formatSpotLastSeen,
+        filterSpotFeatures,
+        getIaruBand,
+        getIaruBandOptions,
         getSpotDisplayValues,
+        parseFrequencyMHz,
         parseSpotTime,
         sortSpotFeaturesByNewest
     };

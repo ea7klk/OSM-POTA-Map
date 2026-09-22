@@ -13,8 +13,11 @@ const {
     buildActivatorProfileUrl,
     buildParkUrl,
     buildSpotsRequestUrl,
+    filterSpotFeatures,
     formatSpotLastSeen,
+    getIaruBandOptions,
     getSpotDisplayValues,
+    normalizeSpotMode,
     sortSpotFeaturesByNewest
 } = window.POTAMAP_SPOTS;
 let potaNames = new Map();
@@ -770,6 +773,8 @@ class PotaSpotsPanel extends L.Control {
         this.refreshMs = 30 * 1000;
         this.isCollapsed = true;
         this.isVisible = potaLayerSelection.spots;
+        this.filters = { mode: '', band: '' };
+        this.visibleFeatures = [];
     }
 
     onAdd(map) {
@@ -781,6 +786,7 @@ class PotaSpotsPanel extends L.Control {
             '<span class="material-icons pota-spots-panel-toggle-icon" aria-hidden="true">expand_more</span>' +
             '</button>' +
             '<div class="pota-spots-panel-content">' +
+            '<div class="pota-spots-filters" aria-label="Filter POTA spots"></div>' +
             '<div class="pota-spots-panel-status" role="status">Loading current spots…</div>' +
             '<div class="pota-spots-table-header" role="row">' +
             '<span>Name / Reference</span><span>Last seen · Mode · Frequency · Activator</span>' +
@@ -790,12 +796,14 @@ class PotaSpotsPanel extends L.Control {
 
         this.toggleButton = this.container.querySelector('.pota-spots-panel-toggle');
         this.toggleIcon = this.container.querySelector('.pota-spots-panel-toggle-icon');
+        this.filtersElement = this.container.querySelector('.pota-spots-filters');
         this.statusElement = this.container.querySelector('.pota-spots-panel-status');
         this.listElement = this.container.querySelector('.pota-spots-list');
 
         L.DomEvent.disableClickPropagation(this.container);
         L.DomEvent.disableScrollPropagation(this.container);
         L.DomEvent.on(this.toggleButton, 'click', this.toggle, this);
+        L.DomEvent.on(this.filtersElement, 'change', this.handleFilterChange, this);
         L.DomEvent.on(this.listElement, 'click', this.handleListClick, this);
 
         if (this.isVisible) {
@@ -810,6 +818,7 @@ class PotaSpotsPanel extends L.Control {
     onRemove() {
         if (this.refreshTimer) clearInterval(this.refreshTimer);
         L.DomEvent.off(this.toggleButton, 'click', this.toggle, this);
+        L.DomEvent.off(this.filtersElement, 'change', this.handleFilterChange, this);
         L.DomEvent.off(this.listElement, 'click', this.handleListClick, this);
         this.refreshTimer = null;
     }
@@ -850,6 +859,10 @@ class PotaSpotsPanel extends L.Control {
             const data = await this.fetchAllSpotsData();
             if (requestId !== this.loadRequestId) return;
             this.features = sortSpotFeaturesByNewest(data.features);
+            if (this.map && this.map.potaSpotsLayer) {
+                this.map.potaSpotsLayer.addData(data);
+            }
+            this.renderFilterControls();
             this.render();
         } catch (error) {
             if (requestId !== this.loadRequestId) return;
@@ -861,8 +874,12 @@ class PotaSpotsPanel extends L.Control {
     }
 
     render() {
-        this.statusElement.textContent = `${this.features.length.toLocaleString()} current spots`;
-        this.listElement.innerHTML = this.features.map((feature, index) => {
+        this.visibleFeatures = filterSpotFeatures(this.features, this.filters);
+        const filteredSuffix = this.visibleFeatures.length === this.features.length
+            ? ''
+            : ` matching ${this.visibleFeatures.length.toLocaleString()}`;
+        this.statusElement.textContent = `${this.features.length.toLocaleString()} current spots${filteredSuffix}`;
+        this.listElement.innerHTML = this.visibleFeatures.map((feature, index) => {
             const values = getSpotDisplayValues(feature.properties || {});
             const coordinates = feature.geometry && feature.geometry.coordinates;
             const { reference, name, mode, frequency, activator, spotTime } = values;
@@ -891,11 +908,45 @@ class PotaSpotsPanel extends L.Control {
         }).join('');
     }
 
+    renderFilterControls() {
+        const modes = [...new Map(this.features.map(feature => {
+            const mode = getSpotDisplayValues(feature.properties || {}).mode;
+            return [normalizeSpotMode(mode), mode];
+        })).entries()]
+            .filter(([value]) => value)
+            .sort((left, right) => left[1].localeCompare(right[1]));
+        const availableModes = new Set(modes.map(([value]) => value));
+        if (this.filters.mode && !availableModes.has(normalizeSpotMode(this.filters.mode))) {
+            this.filters.mode = '';
+        }
+        const modeOptions = modes.map(([value, label]) =>
+            `<option value="${escapeHtml(value)}"${normalizeSpotMode(this.filters.mode) === value ? ' selected' : ''}>${escapeHtml(label)}</option>`
+        ).join('');
+        const bandOptions = getIaruBandOptions().map(({ value, label }) =>
+            `<option value="${escapeHtml(value)}"${this.filters.band === value ? ' selected' : ''}>${escapeHtml(label)}</option>`
+        ).join('');
+
+        this.filtersElement.innerHTML =
+            '<label>Mode <select data-spot-filter="mode">' +
+            '<option value="">All modes</option>' + modeOptions +
+            '</select></label>' +
+            '<label>Band <select data-spot-filter="band">' +
+            '<option value="">All bands</option>' + bandOptions +
+            '</select></label>';
+    }
+
+    handleFilterChange(event) {
+        const input = event.target.closest('[data-spot-filter]');
+        if (!input) return;
+        this.filters[input.dataset.spotFilter] = input.value;
+        this.render();
+    }
+
     handleListClick(event) {
         const referenceButton = event.target.closest('.pota-spots-reference');
         if (!referenceButton) return;
 
-        const feature = this.features[Number(referenceButton.dataset.spotIndex)];
+        const feature = this.visibleFeatures[Number(referenceButton.dataset.spotIndex)];
         const coordinates = feature && feature.geometry && feature.geometry.coordinates;
         if (!Array.isArray(coordinates) || coordinates.length < 2) return;
 
@@ -909,6 +960,7 @@ class PotaSpotsPanel extends L.Control {
         this.loadRequestId += 1;
         if (!this.isVisible) {
             this.features = [];
+            this.visibleFeatures = [];
             this.listElement.innerHTML = '';
             this.statusElement.textContent = 'Spots hidden — enable Spots to load.';
         } else if (this.map) {
@@ -1110,6 +1162,7 @@ const potaCatalogueLayer = osmLayer.catalogueLayer;
 potaCatalogueLayer.addTo(map);
 const potaSpotsLayer = new PotaSpotsLayer();
 potaSpotsLayer.addTo(map);
+map.potaSpotsLayer = potaSpotsLayer;
 
 const potaSpotsPanel = new PotaSpotsPanel();
 potaSpotsPanel.addTo(map);

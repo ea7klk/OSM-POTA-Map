@@ -6,8 +6,12 @@ const {
     buildActivatorProfileUrl,
     buildParkUrl,
     buildSpotsRequestUrl,
+    filterSpotFeatures,
     formatSpotLastSeen,
+    getIaruBand,
+    getIaruBandOptions,
     getSpotDisplayValues,
+    parseFrequencyMHz,
     parseSpotTime,
     sortSpotFeaturesByNewest
 } = require('../spots');
@@ -85,6 +89,30 @@ test('normalizes all fields displayed in the spots panel, including mode', () =>
 test('builds links for activator profiles and POTA references', () => {
     assert.equal(buildActivatorProfileUrl('EA7/KL?'), 'https://pota.app/#/profile/EA7%2FKL%3F');
     assert.equal(buildParkUrl('ES-0016'), 'https://pota.app/#/park/ES-0016');
+});
+
+test('parses spot frequencies in common units and maps them to IARU bands', () => {
+    assert.equal(parseFrequencyMHz('14.250 MHz'), 14.25);
+    assert.equal(parseFrequencyMHz('14250 kHz'), 14.25);
+    assert.equal(parseFrequencyMHz('14250000 Hz'), 14.25);
+    assert.equal(parseFrequencyMHz('14074.0'), 14.074);
+    assert.equal(getIaruBand('14.250 MHz'), '20m');
+    assert.equal(getIaruBand('14074.0'), '20m');
+    assert.equal(getIaruBand('7.100'), '40m');
+    assert.equal(getIaruBand('not a frequency'), null);
+    assert.deepEqual(getIaruBandOptions()[0], { value: '160m', label: '160 m' });
+});
+
+test('filters spot features by mode and IARU band without mutating the source list', () => {
+    const features = [
+        { properties: { mode: 'SSB', frequency: '14.250 MHz' } },
+        { properties: { mode: 'CW', frequency: '14.060 MHz' } },
+        { properties: { mode: 'SSB', frequency: '7.100 MHz' } }
+    ];
+
+    assert.deepEqual(filterSpotFeatures(features, { mode: 'ssb', band: '20m' }), [features[0]]);
+    assert.deepEqual(filterSpotFeatures(features, { band: '40m' }), [features[2]]);
+    assert.deepEqual(features.length, 3);
 });
 
 test('keeps helper names scoped so app.js can import the browser API safely', () => {
