@@ -2,6 +2,7 @@
 /** Build the Nginx document root without requiring a Node.js runtime at serving time. */
 
 const fs = require('node:fs');
+const crypto = require('node:crypto');
 const path = require('node:path');
 const zlib = require('node:zlib');
 
@@ -20,6 +21,7 @@ const rootFiles = [
 ];
 const directories = ['help', 'docs/images'];
 const compressibleExtensions = new Set(['.html', '.css', '.js', '.json', '.svg', '.txt']);
+const versionedAssets = ['bbox-limits.js', 'spots.js', 'app.js', 'styles.css'];
 
 function optimizeHtml(content) {
   return content
@@ -36,8 +38,29 @@ function optimizeCss(content) {
     .trim();
 }
 
+function getAssetVersion(relativePath) {
+  const content = fs.readFileSync(path.join(sourceRoot, relativePath));
+  return crypto.createHash('sha256').update(content).digest('hex').slice(0, 12);
+}
+
+function versionIndexAssets(content) {
+  return versionedAssets.reduce((result, relativePath) => {
+    const assetName = path.basename(relativePath);
+    const version = getAssetVersion(relativePath);
+
+    return result
+      .replaceAll(`src="${assetName}"`, `src="${assetName}?v=${version}"`)
+      .replaceAll(`src="/${assetName}"`, `src="/${assetName}?v=${version}"`)
+      .replaceAll(`href="${assetName}"`, `href="${assetName}?v=${version}"`)
+      .replaceAll(`href="/${assetName}"`, `href="/${assetName}?v=${version}"`);
+  }, content);
+}
+
 function optimize(relativePath, content) {
-  if (relativePath.endsWith('.html')) return optimizeHtml(content);
+  if (relativePath.endsWith('.html')) {
+    const optimized = optimizeHtml(content);
+    return relativePath === 'index.html' ? versionIndexAssets(optimized) : optimized;
+  }
   if (relativePath.endsWith('.css')) return optimizeCss(content);
   return content;
 }
