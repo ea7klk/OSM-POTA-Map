@@ -16,7 +16,10 @@ runtime configuration.
   catalogue. The map links to OSM so contributors can add the missing reference.
 - **Current POTA spots:** A blue antenna layer shows spots in the current map
   view. The collapsible **POTA Spots** panel lists all current spots, newest
-  first; clicking a reference centers the map on that spot at zoom level 9.
+  first; its Mode and IARU Band filters narrow the list without another API
+  request. Clicking a reference centers the map on that spot at zoom level 9.
+  The map markers are refreshed from the same response whenever the spot list
+  refreshes.
 - Overpass clusters use a green style, while unmapped catalogue markers and
   their clusters use a red style in a separate Leaflet layer. The catalogue
   remains visible at every zoom level while the current bounding box is within

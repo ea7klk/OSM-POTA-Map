@@ -16,6 +16,18 @@ test('renders spot rows with Last Seen first and all detail fields available', (
     assert.doesNotMatch(stylesSource, /\.pota-spots-(?:name|reference-cell|field)[^{]*\{[^}]*text-overflow:\s*ellipsis/s);
 });
 
+test('provides mode and band filters in the POTA Spots panel', () => {
+    assert.match(appSource, /data-spot-filter="mode"/);
+    assert.match(appSource, /data-spot-filter="band"/);
+    assert.match(appSource, /getIaruBandOptions\(\)/);
+    assert.match(appSource, /filterSpotFeatures\(this\.features, this\.filters\)/);
+});
+
+test('refreshing the spot list updates the map layer with the same response', () => {
+    assert.match(appSource, /this\.map\.potaSpotsLayer\.addData\(data\)/);
+    assert.match(appSource, /map\.potaSpotsLayer = potaSpotsLayer/);
+});
+
 test('provides compact all/none visibility controls for every API-backed layer', () => {
     assert.match(appSource, /data-visibility-action="all"/);
     assert.match(appSource, /data-visibility-action="none"/);
