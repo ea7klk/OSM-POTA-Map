@@ -727,6 +727,7 @@ class PotaSpotsLayer extends L.Layer {
         if (!data || !Array.isArray(data.features)) return;
 
         data.features.forEach(feature => {
+            if (!feature || typeof feature !== 'object') return;
             const coordinates = feature.geometry && feature.geometry.coordinates;
             if (!Array.isArray(coordinates) || coordinates.length < 2) return;
             const [longitude, latitude] = coordinates;
@@ -799,6 +800,7 @@ class PotaSpotsPanel extends L.Control {
         this.filtersElement = this.container.querySelector('.pota-spots-filters');
         this.statusElement = this.container.querySelector('.pota-spots-panel-status');
         this.listElement = this.container.querySelector('.pota-spots-list');
+        this.renderFilterControls();
 
         L.DomEvent.disableClickPropagation(this.container);
         L.DomEvent.disableScrollPropagation(this.container);
@@ -859,17 +861,24 @@ class PotaSpotsPanel extends L.Control {
             const data = await this.fetchAllSpotsData();
             if (requestId !== this.loadRequestId) return;
             this.features = sortSpotFeaturesByNewest(data.features);
-            if (this.map && this.map.potaSpotsLayer) {
-                this.map.potaSpotsLayer.addData(data);
-            }
             this.renderFilterControls();
             this.render();
+            this.updateMapSpots(data);
         } catch (error) {
             if (requestId !== this.loadRequestId) return;
             this.features = [];
             this.listElement.innerHTML = '';
             this.statusElement.textContent = 'Unable to load current POTA spots.';
             console.error('Error fetching all POTA spots for the panel:', error);
+        }
+    }
+
+    updateMapSpots(data) {
+        if (!this.map || !this.map.potaSpotsLayer) return;
+        try {
+            this.map.potaSpotsLayer.addData(data);
+        } catch (error) {
+            console.error('Unable to update POTA spots on the map:', error);
         }
     }
 
@@ -1161,8 +1170,8 @@ osmLayer.addTo(map);
 const potaCatalogueLayer = osmLayer.catalogueLayer;
 potaCatalogueLayer.addTo(map);
 const potaSpotsLayer = new PotaSpotsLayer();
-potaSpotsLayer.addTo(map);
 map.potaSpotsLayer = potaSpotsLayer;
+potaSpotsLayer.addTo(map);
 
 const potaSpotsPanel = new PotaSpotsPanel();
 potaSpotsPanel.addTo(map);
