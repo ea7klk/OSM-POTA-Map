@@ -47,6 +47,11 @@ test('static build optimizes HTML/CSS and creates precompressed assets', () => {
     assert.ok(fs.existsSync(path.join(outputRoot, 'app.js.gz')));
     assert.ok(fs.existsSync(path.join(outputRoot, 'help/en.html')));
     assert.ok(fs.existsSync(path.join(outputRoot, 'docs/images/04-en-select-park.png')));
+    const index = fs.readFileSync(path.join(outputRoot, 'index.html'), 'utf8');
+    assert.match(index, /bbox-limits\.js\?v=[0-9a-f]{12}/);
+    assert.match(index, /spots\.js\?v=[0-9a-f]{12}/);
+    assert.match(index, /app\.js\?v=[0-9a-f]{12}/);
+    assert.match(index, /styles\.css\?v=[0-9a-f]{12}/);
     assert.ok(fs.statSync(path.join(outputRoot, 'index.html')).size < fs.statSync(path.join(root, 'index.html')).size);
   } finally {
     fs.rmSync(outputRoot, { recursive: true, force: true });
